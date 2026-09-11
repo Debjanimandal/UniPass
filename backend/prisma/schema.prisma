@@ -1,0 +1,195 @@
+// This is your Prisma schema file for UniPass
+// Database: Supabase (PostgreSQL)
+// Docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// ─────────────────────────────────────────────
+// ENUMS
+// ─────────────────────────────────────────────
+
+enum Role {
+  STUDENT
+  GUARD
+  ADMIN
+}
+
+enum SeatType {
+  REGULAR
+  PREMIUM
+  VIP
+}
+
+enum TicketStatus {
+  VALID
+  SCANNED
+  CANCELLED
+}
+
+// ─────────────────────────────────────────────
+// USER
+// Stores all platform users: students, guards, admins
+// ─────────────────────────────────────────────
+
+model User {
+  userId       Int      @id @default(autoincrement()) @map("user_id")
+  firstName    String   @map("first_name")
+  lastName     String   @map("last_name")
+  email        String   @unique
+  phone        String
+  passwordHash String   @map("password_hash")
+  role         Role     @default(STUDENT)
+  isActive     Boolean  @default(true) @map("is_active")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  // Tickets this user booked (as student)
+  tickets        Ticket[] @relation("TicketBooker")
+  // Tickets this user scanned (as guard)
+  scannedTickets Ticket[] @relation("TicketScanner")
+
+  @@map("users")
+}
+
+// ─────────────────────────────────────────────
+// MOVIE
+// The reusable movie record — created once, referenced by many screenings.
+// Do NOT duplicate movie data inside screening rows.
+// ─────────────────────────────────────────────
+
+model Movie {
+  movieId         Int      @id @default(autoincrement()) @map("movie_id")
+  title           String
+  description     String
+  durationMinutes Int      @map("duration_minutes")
+  language        String
+  genre           String
+  posterUrl       String   @map("poster_url")
+  isActive        Boolean  @default(true) @map("is_active")
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  // One movie can have many screenings
+  screenings Screening[]
+
+  @@map("movies")
+}
+
+// ─────────────────────────────────────────────
+// SCREEN
+// A physical auditorium or screening room on campus.
+// Owns a reusable seat layout.
+// ─────────────────────────────────────────────
+
+model Screen {
+  screenId    Int      @id @default(autoincrement()) @map("screen_id")
+  screenName  String   @map("screen_name")
+  venue       String
+  description String
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  // One screen has many physical seats (reusable layout)
+  seats Seat[]
+  // One screen hosts many screenings over time
+  screenings Screening[]
+
+  @@map("screens")
+}
+
+// ─────────────────────────────────────────────
+// SEAT
+// A physical seat permanently belonging to one screen.
+// The seat layout is REUSABLE across all screenings on that screen.
+// Constraint: seat_code must be unique within a screen.
+// ─────────────────────────────────────────────
+
+model Seat {
+  seatId   Int      @id @default(autoincrement()) @map("seat_id")
+  screenId Int      @map("screen_id")
+  rowNo    Int      @map("row_no")
+  seatNo   Int      @map("seat_no")
+  seatCode String   @map("seat_code")
+  seatType SeatType @default(REGULAR) @map("seat_type")
+  isActive Boolean  @default(true) @map("is_active")
+
+  // A seat belongs to exactly one screen
+  screen  Screen   @relation(fields: [screenId], references: [screenId])
+  // A seat can appear in many tickets (across different screenings)
+  tickets Ticket[]
+
+  // Seat code must be unique within a screen
+  @@unique([screenId, seatCode])
+  @@map("seats")
+}
+
+// ─────────────────────────────────────────────
+// SCREENING
+// A specific showing of a movie at a screen on a date/time.
+// Bridges MOVIE and SCREEN.
+// MOVIE 1:N SCREENING | SCREEN 1:N SCREENING
+// ─────────────────────────────────────────────
+
+model Screening {
+  screeningId Int      @id @default(autoincrement()) @map("screening_id")
+  movieId     Int      @map("movie_id")
+  screenId    Int      @map("screen_id")
+  date        DateTime @db.Date
+  startTime   DateTime @map("start_time") @db.Time
+  endTime     DateTime @map("end_time") @db.Time
+  price       Decimal  @db.Decimal(10, 2)
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  // A screening belongs to exactly one movie
+  movie  Movie  @relation(fields: [movieId], references: [movieId])
+  // A screening is hosted by exactly one screen
+  screen Screen @relation(fields: [screenId], references: [screenId])
+  // A screening has many tickets
+  tickets Ticket[]
+
+  @@map("screenings")
+}
+
+// ─────────────────────────────────────────────
+// TICKET
+// A student's reservation for a specific seat at a specific screening.
+// Central joining entity: USER + SCREENING + SEAT = TICKET
+//
+// Critical constraint: UNIQUE(screening_id, seat_id)
+// → Same seat cannot be booked twice for the same screening
+// → Same seat CAN be booked for a different screening
+//
+// scanned_by references USER(GUARD) who scanned the ticket
+// ─────────────────────────────────────────────
+
+model Ticket {
+  ticketId    Int          @id @default(autoincrement()) @map("ticket_id")
+  userId      Int          @map("user_id")
+  screeningId Int          @map("screening_id")
+  seatId      Int          @map("seat_id")
+  status      TicketStatus @default(VALID)
+  bookedAt    DateTime     @default(now()) @map("booked_at")
+  scannedAt   DateTime?    @map("scanned_at")
+  scannedBy   Int?         @map("scanned_by")
+  createdAt   DateTime     @default(now()) @map("created_at")
+
+  // The student who booked the ticket
+  user      User      @relation("TicketBooker", fields: [userId], references: [userId])
+  // The specific screening this ticket is for
+  screening Screening @relation(fields: [screeningId], references: [screeningId])
+  // The specific physical seat reserved
+  seat      Seat      @relation(fields: [seatId], references: [seatId])
+  // The guard who scanned this ticket (nullable — null until scanned)
+  scanner   User?     @relation("TicketScanner", fields: [scannedBy], references: [userId])
+
+  // Prevents double-booking the same seat for the same screening
+  @@unique([screeningId, seatId])
+  @@map("tickets")
+}
