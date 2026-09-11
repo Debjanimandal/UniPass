@@ -7,6 +7,10 @@ import Landing from './pages/Landing';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import ComingSoon from './pages/ComingSoon';
+import StudentDashboard from './pages/StudentDashboard';
+import Bookings from './pages/Bookings';
+import Events from './pages/Events';
+import Films from './pages/Films';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -31,14 +35,14 @@ export default function App() {
 
           {/* ─── Student Routes ─────────────────────────────────── */}
           <Route element={<ProtectedRoute allowedRoles={['STUDENT']} />}>
-            <Route path="/student/dashboard" element={<ComingSoon title="Student Dashboard" description="Your upcoming tickets, recent bookings, and quick access." />} />
-            <Route path="/student/films" element={<ComingSoon title="Films" />} />
-            <Route path="/student/events" element={<ComingSoon title="Events & Screenings" />} />
+            <Route path="/student/dashboard" element={<StudentDashboard />} />
+            <Route path="/student/films" element={<Films />} />
+            <Route path="/student/events" element={<Events />} />
             <Route path="/student/movies/:id" element={<ComingSoon title="Movie Details" />} />
             <Route path="/student/screenings/:id" element={<ComingSoon title="Screening Details" />} />
             <Route path="/student/screenings/:id/book" element={<ComingSoon title="Select Your Seat" />} />
             <Route path="/student/booking-confirmation" element={<ComingSoon title="Booking Confirmed!" />} />
-            <Route path="/student/bookings" element={<ComingSoon title="My Bookings" />} />
+            <Route path="/student/bookings" element={<Bookings />} />
             <Route path="/student/tickets" element={<ComingSoon title="My Tickets" />} />
             <Route path="/student/tickets/:id" element={<ComingSoon title="Digital Ticket" />} />
             <Route path="/student/profile" element={<ComingSoon title="My Profile" />} />

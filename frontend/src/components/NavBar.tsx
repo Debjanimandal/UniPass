@@ -23,37 +23,38 @@ export default function NavBar() {
       <div className="container navbar-inner">
         {/* Logo */}
         <Link to="/" className="navbar-logo">
-          <div className="logo-icon">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-              <path d="M12 2L3 7v10l9 5 9-5V7L12 2z" fill="currentColor" opacity="0.9"/>
-              <path d="M12 2L3 7l9 5 9-5-9-5z" fill="white" opacity="0.3"/>
-            </svg>
-          </div>
+          <img src="/logo.png" alt="UniPass Logo" className="logo-img" />
           <span className="logo-text">UniPass</span>
         </Link>
 
         {/* Navigation Links */}
         <div className="navbar-links">
+          <NavLink to="/" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`} end>
+            Home
+          </NavLink>
           <NavLink to="/films" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
-            Films
+            Movies
           </NavLink>
-          <NavLink to="/events" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
-            Events
+          <NavLink to="/screenings" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
+            Screenings
           </NavLink>
-          {isAuthenticated && user?.role === 'STUDENT' && (
-            <>
-              <NavLink to="/student/bookings" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
-                My Bookings
-              </NavLink>
-              <NavLink to="/student/tickets" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
-                My Tickets
-              </NavLink>
-            </>
-          )}
+          <NavLink to="/about" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
+            About
+          </NavLink>
+          <NavLink to="/contact" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
+            Contact
+          </NavLink>
         </div>
 
-        {/* Auth Actions */}
-        <div className="navbar-auth">
+        {/* Auth Actions & Search */}
+        <div className="navbar-actions">
+          <button className="search-btn">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+          </button>
+          
           {isAuthenticated && user ? (
             <>
               <Link to={getDashboardLink()} className="navbar-user">
@@ -62,16 +63,16 @@ export default function NavBar() {
                 </div>
                 <span className="user-name">{user.firstName}</span>
               </Link>
-              <button className="btn btn-ghost btn-sm navbar-logout" onClick={handleLogout}>
+              <button className="btn btn-login btn-sm" onClick={handleLogout}>
                 Sign Out
               </button>
             </>
           ) : (
             <>
-              <Link to="/login" className="btn btn-ghost btn-sm">
-                Log In
+              <Link to="/login" className="btn btn-login btn-sm">
+                Login
               </Link>
-              <Link to="/register" className="btn btn-primary btn-sm">
+              <Link to="/register" className="btn btn-get-started btn-sm">
                 Get Started
               </Link>
             </>

@@ -1,0 +1,330 @@
+.student-dashboard-page {
+  min-height: 100vh;
+  background-color: #f5f7fa;
+  font-family: var(--font-body);
+}
+
+/* --- Top Navigation Bar --- */
+.student-navbar {
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 40px;
+  background-color: white;
+  border-bottom: 1px solid #eaeaea;
+}
+
+.student-nav-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+}
+
+.student-nav-logo .logo-img {
+  max-height: 32px;
+  max-width: 32px;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  display: block;
+}
+
+.student-nav-logo .logo-text {
+  font-family: var(--font-heading);
+  font-size: 20px;
+  font-weight: 800;
+  color: #0d1f5c;
+  letter-spacing: -0.02em;
+}
+
+.student-nav-right a {
+  text-decoration: none;
+  color: #4a5568;
+  font-weight: 500;
+  font-size: 14px;
+}
+
+.student-nav-right a:hover {
+  color: #0d1f5c;
+}
+
+/* --- Hero Section --- */
+.student-hero {
+  background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
+  padding: 40px 80px 120px 80px;
+  color: white;
+  position: relative;
+}
+
+.student-hero-nav {
+  display: flex;
+  gap: 32px;
+  margin-bottom: 48px;
+}
+
+.student-hero-nav a {
+  color: rgba(255, 255, 255, 0.7);
+  text-decoration: none;
+  font-size: 15px;
+  font-weight: 500;
+  padding-bottom: 4px;
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s ease;
+}
+
+.student-hero-nav a:hover,
+.student-hero-nav a.active {
+  color: white;
+  border-bottom-color: white;
+}
+
+.student-hero-content {
+  max-width: 600px;
+}
+
+.student-hero-content h1 {
+  font-family: var(--font-heading);
+  font-size: 48px;
+  font-weight: 700;
+  margin-bottom: 16px;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  color: white;
+}
+
+.student-hero-content p {
+  font-size: 16px;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.85);
+  max-width: 480px;
+}
+
+/* --- Main Layout --- */
+.student-main-content {
+  max-width: 1200px;
+  margin: -80px auto 0;
+  padding: 0 40px 60px;
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 32px;
+  position: relative;
+  z-index: 10;
+}
+
+/* --- Cards Shared Styles --- */
+.dashboard-card {
+  background: white;
+  border-radius: 12px;
+  padding: 32px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.04);
+}
+
+.dashboard-card h2 {
+  font-family: var(--font-heading);
+  font-size: 20px;
+  font-weight: 700;
+  color: #1a202c;
+  margin-bottom: 24px;
+}
+
+/* --- Upcoming Events --- */
+.events-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.event-item {
+  display: flex;
+  gap: 20px;
+  padding: 20px 0;
+  border-bottom: 1px solid #f0f2f5;
+}
+
+.event-item:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.event-item:first-child {
+  padding-top: 0;
+}
+
+.event-date-box {
+  background-color: #f8fafc;
+  border-radius: 8px;
+  padding: 12px;
+  min-width: 70px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.event-date-box .day {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1a202c;
+}
+
+.event-date-box .month {
+  font-size: 14px;
+  color: #4a5568;
+  margin: 2px 0;
+}
+
+.event-date-box .year {
+  font-size: 12px;
+  color: #718096;
+}
+
+.event-details {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.event-details h3 {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1a202c;
+  margin-bottom: 6px;
+}
+
+.event-details p {
+  font-size: 14px;
+  color: #64748b;
+}
+
+/* --- My Tickets --- */
+.ticket-preview {
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 20px;
+  background: #f8fafc;
+  margin-bottom: 16px;
+}
+
+.ticket-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.ticket-header-logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ticket-header-logo img {
+  height: 20px;
+}
+
+.ticket-header-logo span {
+  font-weight: 700;
+  color: #0d1f5c;
+  font-size: 14px;
+}
+
+.ticket-badge {
+  font-size: 12px;
+  color: #64748b;
+}
+
+.ticket-body {
+  display: flex;
+  gap: 16px;
+}
+
+.ticket-qr-placeholder {
+  width: 80px;
+  height: 80px;
+  flex-shrink: 0;
+}
+
+.ticket-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.ticket-info h3 {
+  font-size: 16px;
+  font-weight: 700;
+  color: #1a202c;
+  margin-bottom: 8px;
+}
+
+.ticket-info p {
+  font-size: 12px;
+  color: #64748b;
+  line-height: 1.5;
+}
+
+.btn-view-qr {
+  width: 100%;
+  padding: 12px;
+  background-color: #0d1f5c;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.btn-view-qr:hover {
+  background-color: #1e3a8a;
+}
+
+/* --- Secure Entry --- */
+.secure-entry-card {
+  margin-top: 32px;
+  text-align: center;
+  padding: 40px 32px;
+}
+
+.secure-qr-large {
+  width: 160px;
+  height: 160px;
+  margin: 0 auto 24px;
+}
+
+.secure-entry-card h3 {
+  font-size: 18px;
+  font-weight: 700;
+  color: #1a202c;
+  margin-bottom: 12px;
+}
+
+.secure-entry-card p {
+  font-size: 14px;
+  color: #64748b;
+  line-height: 1.5;
+  padding: 0 16px;
+}
+
+/* --- Responsive Layout --- */
+@media (max-width: 1024px) {
+  .student-main-content {
+    grid-template-columns: 1fr;
+    padding: 0 32px 60px;
+  }
+  
+  .student-hero {
+    padding: 40px 32px 120px;
+  }
+}
+
+@media (max-width: 768px) {
+  .student-hero-content h1 {
+    font-size: 36px;
+  }
+  
+  .student-hero-nav {
+    display: none; /* Mobile nav would go here */
+  }
+}
