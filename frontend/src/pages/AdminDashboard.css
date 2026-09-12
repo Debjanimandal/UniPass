@@ -1,0 +1,467 @@
+.admin-dashboard-page {
+  min-height: 100vh;
+  background-color: #f0f4f8;
+  font-family: var(--font-body);
+  padding-bottom: 60px;
+}
+
+/* --- Top White Navbar --- */
+.admin-top-nav {
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 40px;
+  background-color: white;
+}
+
+.admin-logo-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+}
+
+.admin-logo-container img {
+  height: 32px;
+  width: auto;
+}
+
+.admin-logo-text {
+  font-family: var(--font-heading);
+  font-size: 20px;
+  font-weight: 800;
+  color: #0d1f5c;
+  letter-spacing: -0.02em;
+}
+
+.admin-user-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.admin-user-info .welcome-text {
+  font-size: 14px;
+  color: #1a202c;
+  font-weight: 500;
+  text-align: right;
+  line-height: 1.2;
+}
+
+.admin-user-info .welcome-text .name {
+  font-weight: 700;
+  display: block;
+}
+
+.admin-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+  background-color: #e2e8f0;
+}
+
+/* --- Blue Secondary Nav --- */
+.admin-blue-nav {
+  background-color: #2563eb;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 40px;
+}
+
+.admin-nav-links {
+  display: flex;
+  gap: 32px;
+  height: 100%;
+}
+
+.admin-blue-nav a {
+  color: rgba(255, 255, 255, 0.8);
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  border-bottom: 3px solid transparent;
+  transition: all 0.2s;
+}
+
+.admin-blue-nav a:hover {
+  color: white;
+}
+
+.admin-blue-nav a.active {
+  color: white;
+  border-bottom-color: white;
+  font-weight: 600;
+}
+
+.admin-back-btn {
+  color: white;
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+}
+
+.admin-back-btn:hover {
+  text-decoration: underline;
+}
+
+/* --- Header --- */
+.admin-header-container {
+  max-width: 1400px;
+  margin: 32px auto 24px;
+  padding: 0 40px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.admin-header-text h1 {
+  font-family: var(--font-heading);
+  font-size: 28px;
+  color: #0f172a;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.admin-header-text p {
+  color: #475569;
+  font-size: 14px;
+}
+
+.admin-header-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.admin-btn-primary {
+  background-color: #2563eb;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: background-color 0.2s;
+}
+
+.admin-btn-primary:hover {
+  background-color: #1d4ed8;
+}
+
+/* --- Grid Layout --- */
+.admin-content {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 40px;
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 24px;
+  align-items: start;
+}
+
+.admin-left-col, .admin-right-col {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* --- Shared Card Styles --- */
+.admin-card {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  border: 1px solid #e2e8f0;
+}
+
+.admin-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.admin-card-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.admin-link-blue {
+  color: #2563eb;
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.admin-link-blue:hover {
+  text-decoration: underline;
+}
+
+/* --- Top Stat Cards (4 columns) --- */
+.admin-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+
+.stat-card {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  border: 1px solid #e2e8f0;
+  display: flex;
+  flex-direction: column;
+}
+
+.stat-card-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  color: #475569;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.stat-card-header svg {
+  color: #64748b;
+}
+
+.stat-value {
+  font-size: 32px;
+  font-weight: 700;
+  color: #0f172a;
+  line-height: 1;
+  margin-bottom: 8px;
+}
+
+.stat-sub {
+  font-size: 13px;
+  color: #64748b;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.stat-sub.positive {
+  color: #16a34a;
+}
+
+/* --- Tables --- */
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.admin-table th {
+  text-align: left;
+  font-size: 13px;
+  font-weight: 600;
+  color: #0f172a;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.admin-table td {
+  padding: 12px 0;
+  font-size: 13px;
+  color: #334155;
+  border-bottom: 1px solid #f1f5f9;
+  vertical-align: middle;
+}
+
+.admin-table tr:last-child td {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.status-badge {
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  display: inline-block;
+}
+.status-badge.active { background-color: #dcfce7; color: #16a34a; }
+.status-badge.warning { background-color: #fef3c7; color: #d97706; }
+.status-badge.valid { background-color: #dcfce7; color: #16a34a; border: 1px solid #bbf7d0; }
+
+.progress-bar-container {
+  width: 100%;
+  height: 4px;
+  background-color: #e2e8f0;
+  border-radius: 2px;
+  margin-top: 6px;
+  overflow: hidden;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  background-color: #2563eb;
+}
+.progress-bar-fill.warning { background-color: #f59e0b; }
+
+.td-availability {
+  font-size: 12px;
+  color: #0f172a;
+  font-weight: 500;
+}
+
+/* --- Manage UniPass Grid --- */
+.manage-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.manage-btn {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-decoration: none;
+  color: inherit;
+}
+
+.manage-btn:hover {
+  border-color: #cbd5e1;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.manage-btn-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background-color: #eff6ff;
+  color: #2563eb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.manage-btn-content {
+  display: flex;
+  flex-direction: column;
+}
+
+.manage-btn-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #0f172a;
+  margin-bottom: 2px;
+}
+
+.manage-btn-desc {
+  font-size: 12px;
+  color: #64748b;
+}
+
+/* --- Right Column Cards --- */
+.activity-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.act-stat .label {
+  font-size: 12px;
+  color: #64748b;
+  display: block;
+  margin-bottom: 4px;
+}
+
+.act-stat .value {
+  font-size: 18px;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.activity-progress {
+  width: 100%;
+  height: 6px;
+  background-color: #e2e8f0;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.activity-progress-fill {
+  height: 100%;
+  background-color: #2563eb;
+  width: 75%;
+}
+
+/* Seat Availability */
+.seat-avail-item {
+  margin-bottom: 16px;
+}
+.seat-avail-item:last-child {
+  margin-bottom: 0;
+}
+.seat-avail-item .header {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  margin-bottom: 6px;
+}
+.seat-avail-item .header .name { color: #0f172a; font-weight: 500; }
+.seat-avail-item .header .info { color: #64748b; }
+
+/* Publishing Status */
+.pub-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.pub-card {
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 12px;
+  background: white;
+}
+.pub-card.published {
+  background-color: #f0fdf4;
+  border-color: #dcfce7;
+}
+
+.pub-card .title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #0f172a;
+  margin-bottom: 2px;
+}
+.pub-card .info {
+  font-size: 11px;
+  color: #64748b;
+  margin-bottom: 8px;
+}

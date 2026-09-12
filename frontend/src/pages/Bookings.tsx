@@ -196,19 +196,13 @@ export default function Bookings() {
             </div>
             
             <div className="summary-divider"></div>
-            
+
             <div className="summary-row">
-              <span className="label">Ticket Price:</span>
-              <span className="value">₹250</span>
+              <span className="label">Admission:</span>
+              <span className="value" style={{ color: '#16a34a', fontWeight: 700 }}>FREE</span>
             </div>
-            
-            <div className="summary-divider"></div>
-            
-            <div className="summary-total">
-              <span>Total:</span>
-              <span>₹{selectedSeat ? '250' : '0'}</span>
-            </div>
-            
+
+
             <button className="btn-confirm-booking" disabled={!selectedSeat}>
               Confirm Booking
             </button>
