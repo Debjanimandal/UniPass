@@ -182,13 +182,7 @@ export default function Login() {
                 {isSubmitting ? <div className="spinner" /> : 'Sign In'}
               </button>
               
-              <div className="auth-divider">
-                <span>OR</span>
-              </div>
 
-              <button type="button" className="btn btn-secondary btn-full btn-lg btn-sso">
-                Continue with university account
-              </button>
 
             </form>
 
@@ -196,22 +190,7 @@ export default function Login() {
               Don't have an account? <Link to="/register">Create an account</Link>
             </div>
             
-            {/* Quick demo links for testing */}
-            <div className="demo-accounts-mini">
-               Demo: 
-               <button onClick={() => {
-                 document.getElementById('email')!.value = 'admin@unipass.edu';
-                 document.getElementById('password')!.value = 'Admin@1234';
-               }}>Admin</button>
-               <button onClick={() => {
-                 document.getElementById('email')!.value = 'aisha@student.unipass.edu';
-                 document.getElementById('password')!.value = 'Student@1234';
-               }}>Student</button>
-               <button onClick={() => {
-                 document.getElementById('email')!.value = 'guard@unipass.edu';
-                 document.getElementById('password')!.value = 'Guard@1234';
-               }}>Guard</button>
-            </div>
+
           </div>
         </div>
       </div>

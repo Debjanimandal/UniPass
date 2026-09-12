@@ -50,34 +50,60 @@
   color: #0d1f5c;
 }
 
-/* --- Hero Section --- */
-.student-hero {
-  background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
-  padding: 40px 80px 120px 80px;
-  color: white;
-  position: relative;
+.back-to-home-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-decoration: none;
+  color: #4a5568;
+  font-weight: 500;
+  font-size: 14px;
+  padding: 0;
+  font-family: inherit;
+  transition: color 0.2s;
 }
 
-.student-hero-nav {
+.back-to-home-btn:hover {
+  color: #0d1f5c;
+}
+
+/* --- Blue Secondary Nav --- */
+.student-secondary-nav {
+  background-color: #2b5c9d;
+  height: 48px;
   display: flex;
+  align-items: center;
+  padding: 0 40px;
   gap: 32px;
-  margin-bottom: 48px;
 }
 
-.student-hero-nav a {
+.student-secondary-nav a {
   color: rgba(255, 255, 255, 0.7);
   text-decoration: none;
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 500;
-  padding-bottom: 4px;
-  border-bottom: 2px solid transparent;
-  transition: all 0.2s ease;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  border-bottom: 3px solid transparent;
+  transition: all 0.2s;
 }
 
-.student-hero-nav a:hover,
-.student-hero-nav a.active {
+.student-secondary-nav a:hover {
+  color: white;
+}
+
+.student-secondary-nav a.active {
   color: white;
   border-bottom-color: white;
+}
+
+/* --- Hero Section --- */
+.student-hero {
+  background: white;
+  padding: 60px 40px 120px 40px;
+  color: #0f172a;
+  position: relative;
 }
 
 .student-hero-content {
@@ -91,13 +117,13 @@
   margin-bottom: 16px;
   line-height: 1.1;
   letter-spacing: -0.02em;
-  color: white;
+  color: #0d1f5c;
 }
 
 .student-hero-content p {
   font-size: 16px;
   line-height: 1.6;
-  color: rgba(255, 255, 255, 0.85);
+  color: #4a5568;
   max-width: 480px;
 }
 

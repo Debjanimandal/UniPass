@@ -62,7 +62,12 @@ export async function registerUser(input: RegisterInput) {
 
   const passwordHash = await hashPassword(input.password);
 
-  // Role is always STUDENT on self-registration — never trust client input
+  // Only the designated admin email gets the ADMIN role.
+  // Every other self-registration is always STUDENT.
+  const ADMIN_EMAILS = ['tiyamandal890@gmail.com'];
+  const role = ADMIN_EMAILS.includes(input.email.toLowerCase()) ? 'ADMIN' : 'STUDENT';
+
+  // Role is determined server-side — never trust client input
   const user = await prisma.user.create({
     data: {
       firstName: input.firstName,
@@ -70,7 +75,7 @@ export async function registerUser(input: RegisterInput) {
       email: input.email,
       phone: input.phone,
       passwordHash,
-      role: 'STUDENT',
+      role,
     },
   });
 

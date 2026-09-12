@@ -1,9 +1,15 @@
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../store/auth.store';
 import './StudentDashboard.css';
 
 export default function StudentDashboard() {
-  const { user } = useAuthStore();
+  const { user, logout } = useAuthStore();
+  const navigate = useNavigate();
+
+  const handleLogoutHome = () => {
+    logout();
+    navigate('/');
+  };
   
   // Extract user's full name, or fallback to 'Student' if not available
   const fullName = user ? `${user.firstName} ${user.lastName}` : 'Student';
@@ -17,20 +23,21 @@ export default function StudentDashboard() {
           <span className="logo-text">UniPass</span>
         </Link>
         <div className="student-nav-right">
-          <Link to="/student/dashboard">Back to Dashboard</Link>
+          <button onClick={handleLogoutHome} className="back-to-home-btn">Back to Home</button>
         </div>
       </nav>
 
+      {/* ─── Blue Secondary Nav ───────────────────────────────────── */}
+      <div className="student-secondary-nav">
+        <Link to="/student/dashboard" className="active">Dashboard</Link>
+        <Link to="/student/bookings">Bookings</Link>
+        <Link to="/student/events">Events</Link>
+        <Link to="/student/films">Films</Link>
+        <Link to="/student/profile">Profile</Link>
+      </div>
+
       {/* ─── Hero Section ───────────────────────────────────────── */}
       <section className="student-hero">
-        <div className="student-hero-nav">
-          <Link to="/student/dashboard" className="active">Dashboard</Link>
-          <Link to="/student/bookings">Bookings</Link>
-          <Link to="/student/events">Events</Link>
-          <Link to="/student/films">Films</Link>
-          <Link to="/student/profile">Profile</Link>
-        </div>
-        
         <div className="student-hero-content">
           <h1>Welcome,<br />{fullName}!</h1>
           <p>
