@@ -1,0 +1,450 @@
+.admin-bookings-page {
+  min-height: 100vh;
+  background-color: #f4f7f9;
+  font-family: var(--font-body);
+  padding-bottom: 60px;
+}
+
+/* --- Top White Navbar (Same as AdminDashboard) --- */
+.admin-top-nav {
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 40px;
+  background-color: white;
+}
+
+.admin-logo-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+}
+
+.admin-logo-container img {
+  height: 32px;
+  width: auto;
+}
+
+.admin-logo-text {
+  font-family: var(--font-heading);
+  font-size: 20px;
+  font-weight: 800;
+  color: #0d1f5c;
+  letter-spacing: -0.02em;
+}
+
+.admin-user-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.admin-user-info .welcome-text {
+  font-size: 14px;
+  color: #1a202c;
+  font-weight: 500;
+  text-align: right;
+  line-height: 1.2;
+}
+
+.admin-user-info .welcome-text .name {
+  font-weight: 700;
+  display: block;
+}
+
+.admin-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+  background-color: #e2e8f0;
+}
+
+/* --- Blue Secondary Nav (Same as AdminDashboard) --- */
+.admin-blue-nav {
+  background-color: #1e3a8a;
+  height: 48px;
+  display: flex;
+  align-items: stretch;
+  justify-content: space-between;
+  padding: 0 40px;
+}
+
+.admin-nav-links {
+  display: flex;
+  gap: 0;
+  height: 100%;
+}
+
+.admin-blue-nav a {
+  color: rgba(255, 255, 255, 0.8);
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  border-bottom: 3px solid transparent;
+  transition: all 0.2s;
+}
+
+.admin-blue-nav a:hover {
+  color: white;
+  background-color: #1e3a8a;
+}
+
+.admin-blue-nav a.active {
+  color: white;
+  background-color: white;
+  color: #0f172a;
+  padding: 0 16px;
+  border-radius: 6px;
+  margin: 6px 0;
+  font-weight: 600;
+  border: none;
+  height: 36px;
+}
+
+.admin-back-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.admin-back-btn:hover {
+  color: white;
+}
+
+/* Wait, user requested unchanged hover/navbar style from *previous* screens, which used border-bottom.
+   Let's revert the active pill background to match the instruction.
+*/
+.admin-blue-nav a.active {
+  color: white;
+  border-bottom: 3px solid white;
+  background-color: transparent;
+  padding: 0;
+  margin: 0;
+  border-radius: 0;
+  height: 100%;
+}
+
+/* --- Content Area --- */
+.admin-bookings-content {
+  max-width: 1240px;
+  margin: 32px auto;
+  padding: 0 40px;
+}
+
+/* --- Header Section --- */
+.bookings-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 20px;
+}
+
+.bookings-header-text h1 {
+  font-size: 26px;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0 0 6px 0;
+  font-family: var(--font-heading);
+}
+
+.bookings-header-text p {
+  color: #475569;
+  font-size: 14px;
+  margin: 0;
+}
+
+.btn-export {
+  background-color: white;
+  color: #334155;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+}
+
+.btn-export:hover {
+  background-color: #f8fafc;
+  color: #0f172a;
+}
+
+/* --- Summary Stats Bar --- */
+.bookings-summary-bar {
+  display: inline-flex;
+  gap: 24px;
+  background: white;
+  padding: 10px 24px;
+  border-radius: 24px;
+  margin-bottom: 24px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  font-size: 14px;
+  color: #334155;
+  border: 1px solid #f1f5f9;
+}
+
+.summary-item strong {
+  color: #0f172a;
+  font-weight: 600;
+  margin-right: 4px;
+}
+
+/* --- Toolbar --- */
+.bookings-toolbar {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 24px;
+  align-items: center;
+}
+
+.toolbar-search {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: white;
+  border: 1px solid #cbd5e1;
+  padding: 8px 16px;
+  border-radius: 6px;
+  width: 320px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+}
+
+.toolbar-search svg {
+  color: #94a3b8;
+}
+
+.toolbar-search input {
+  border: none;
+  background: transparent;
+  width: 100%;
+  font-size: 13px;
+  outline: none;
+  color: #0f172a;
+}
+
+.toolbar-filters {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex: 1;
+}
+
+.filter-group {
+  display: flex;
+  align-items: center;
+  background: white;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  padding: 0 12px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+}
+
+.filter-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #334155;
+  margin-right: 8px;
+}
+
+.filter-select {
+  padding: 8px 24px 8px 0;
+  border: none;
+  font-size: 13px;
+  color: #64748b;
+  background-color: transparent;
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right center;
+  outline: none;
+}
+
+.btn-clear-filters {
+  background: transparent;
+  border: none;
+  color: #2563eb;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 8px;
+  margin-left: auto;
+}
+
+.btn-clear-filters:hover {
+  text-decoration: underline;
+}
+
+/* --- Table Container --- */
+.bookings-table-container {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  border: 1px solid #f1f5f9;
+  overflow: hidden;
+  margin-bottom: 60px;
+}
+
+.table-header {
+  padding: 24px 24px 16px 24px;
+}
+
+.table-header h2 {
+  font-size: 18px;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0 0 4px 0;
+}
+
+.table-header .subtitle {
+  font-size: 13px;
+  color: #64748b;
+}
+
+.bookings-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.bookings-table th, .bookings-table td {
+  padding: 16px 24px;
+  text-align: left;
+  font-size: 13px;
+}
+
+.bookings-table th {
+  background: #f8fafc;
+  color: #0f172a;
+  font-weight: 700;
+  border-top: 1px solid #e2e8f0;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.bookings-table td {
+  border-bottom: 1px solid #f1f5f9;
+  color: #334155;
+  vertical-align: middle;
+}
+
+.bookings-table td.fw-600 {
+  font-weight: 600;
+  color: #0f172a;
+}
+
+/* Status Pills */
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  border: 1px solid transparent;
+}
+
+.status-pill.valid {
+  background-color: #f0fdf4;
+  color: #16a34a;
+  border-color: #bbf7d0;
+}
+
+.status-pill.scanned {
+  background-color: #eff6ff;
+  color: #2563eb;
+  border-color: #bfdbfe;
+}
+
+.status-pill.cancelled {
+  background-color: #fef2f2;
+  color: #dc2626;
+  border-color: #fecdd3;
+}
+
+.actions-cell {
+  text-align: right;
+}
+
+.btn-dropdown {
+  background: white;
+  border: 1px solid #cbd5e1;
+  color: #64748b;
+  padding: 6px 10px;
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-dropdown:hover {
+  background: #f8fafc;
+  color: #334155;
+}
+
+/* --- Pagination Footer --- */
+.table-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 24px;
+  border-top: 1px solid #e2e8f0;
+}
+
+.showing-text {
+  font-size: 13px;
+  color: #64748b;
+}
+
+.pagination {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.page-btn {
+  background: white;
+  border: 1px solid #cbd5e1;
+  color: #475569;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.page-btn:hover:not(.active) {
+  background: #f8fafc;
+}
+
+.page-btn.active {
+  background: white;
+  border-color: #2563eb;
+  color: #2563eb;
+  font-weight: 600;
+}
+
+.page-ellipsis {
+  color: #94a3b8;
+  padding: 0 4px;
+}

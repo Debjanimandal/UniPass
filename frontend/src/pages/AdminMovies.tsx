@@ -142,8 +142,8 @@ export default function AdminMovies() {
         <h2 className="movies-section-title">Recently Added</h2>
         <div className="movies-grid">
           {recentlyAdded.map((movie, i) => (
-            <div key={i} className="movie-card">
-              <div className="movie-card-left">
+            <div key={i} className="admin-movie-card">
+              <div className="admin-movie-card-left">
                 <img 
                   src={movie.poster} 
                   alt={movie.title} 
@@ -151,14 +151,14 @@ export default function AdminMovies() {
                   onError={(e) => { e.currentTarget.src = 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs='; }} 
                 />
               </div>
-              <div className="movie-card-right">
+              <div className="admin-movie-card-right">
                 <div className="movie-title">{movie.title}</div>
                 <div className="movie-meta">{movie.genre} &bull; {movie.duration}</div>
                 <span className={`status-badge ${movie.status.toLowerCase()}`}>
                   {movie.status}
                 </span>
                 <div className="screenings-info">{movie.screenings}</div>
-                <div className="movie-card-actions">
+                <div className="admin-movie-card-actions">
                   <button className="btn-outline">Manage Screenings</button>
                   <button className="btn-outline edit">Edit</button>
                 </div>

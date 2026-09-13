@@ -14,6 +14,12 @@ import Films from './pages/Films';
 import Profile from './pages/Profile';
 import AdminDashboard from './pages/AdminDashboard';
 import AdminMovies from './pages/AdminMovies';
+import AdminScreens from './pages/AdminScreens';
+import AdminSeats from './pages/AdminSeats';
+import AdminScreenings from './pages/AdminScreenings';
+import AdminBookings from './pages/AdminBookings';
+import AdminUsers from './pages/AdminUsers';
+import AdminProfile from './pages/AdminProfile';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -61,11 +67,12 @@ export default function App() {
           <Route element={<ProtectedRoute allowedRoles={['ADMIN']} />}>
             <Route path="/admin/dashboard" element={<AdminDashboard />} />
             <Route path="/admin/movies" element={<AdminMovies />} />
-            <Route path="/admin/screens" element={<ComingSoon title="Screen Management" />} />
-            <Route path="/admin/seats" element={<ComingSoon title="Seat Layout Management" />} />
-            <Route path="/admin/screenings" element={<ComingSoon title="Screening Management" />} />
-            <Route path="/admin/users" element={<ComingSoon title="User Management" />} />
-            <Route path="/admin/bookings" element={<ComingSoon title="All Bookings" />} />
+            <Route path="/admin/screens" element={<AdminScreens />} />
+            <Route path="/admin/seats" element={<AdminSeats />} />
+            <Route path="/admin/screenings" element={<AdminScreenings />} />
+            <Route path="/admin/users" element={<AdminUsers />} />
+            <Route path="/admin/bookings" element={<AdminBookings />} />
+            <Route path="/admin/profile" element={<AdminProfile />} />
             <Route path="/admin/scans" element={<ComingSoon title="Entry & Scan Monitoring" />} />
           </Route>
 

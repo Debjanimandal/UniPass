@@ -64,21 +64,22 @@
 
 /* --- Blue Secondary Nav --- */
 .admin-blue-nav {
-  background-color: #2563eb;
+  background-color: #1e3a8a;
   height: 48px;
   display: flex;
-  align-items: center;
+  align-items: stretch;
   justify-content: space-between;
   padding: 0 40px;
 }
 
 .admin-nav-links {
   display: flex;
-  gap: 32px;
+  gap: 0;
   height: 100%;
 }
 
 .admin-blue-nav a {
+  padding: 0 16px;
   color: rgba(255, 255, 255, 0.8);
   text-decoration: none;
   font-size: 14px;
@@ -92,6 +93,7 @@
 
 .admin-blue-nav a:hover {
   color: white;
+  background-color: #1e3a8a;
 }
 
 .admin-blue-nav a.active {
@@ -147,7 +149,7 @@
 }
 
 .admin-btn-primary {
-  background-color: #2563eb;
+  background-color: #1e3a8a;
   color: white;
   border: none;
   border-radius: 6px;
@@ -162,7 +164,7 @@
 }
 
 .admin-btn-primary:hover {
-  background-color: #1d4ed8;
+  background-color: #1e40af;
 }
 
 /* --- Grid Layout --- */
@@ -319,7 +321,7 @@
 
 .progress-bar-fill {
   height: 100%;
-  background-color: #2563eb;
+  background-color: #1e3a8a;
 }
 .progress-bar-fill.warning { background-color: #f59e0b; }
 
@@ -416,7 +418,7 @@
 
 .activity-progress-fill {
   height: 100%;
-  background-color: #2563eb;
+  background-color: #1e3a8a;
   width: 75%;
 }
 
