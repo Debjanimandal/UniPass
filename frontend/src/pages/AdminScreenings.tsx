@@ -14,52 +14,7 @@ export default function AdminScreenings() {
 
   const fullName = user ? `${user.firstName} ${user.lastName}` : 'Admin Name';
 
-  const upcomingScreenings = [
-    {
-      id: 1,
-      movie: 'Interstellar',
-      date: '15 Sep 2026',
-      time: '6:00 PM - 9:00 PM',
-      screen: 'Screen 1',
-      bookings: 72,
-      capacity: 120,
-      price: 250,
-      status: 'Active'
-    },
-    {
-      id: 2,
-      movie: 'Inception',
-      date: '16 Sep 2026',
-      time: '4:00 PM - 6:30 PM',
-      screen: 'Screen 2',
-      bookings: 88,
-      capacity: 100,
-      price: 220,
-      status: 'Active'
-    },
-    {
-      id: 3,
-      movie: 'Oppenheimer',
-      date: '15 Sep 2026',
-      time: '6:00 PM - 9:00 PM',
-      screen: 'Screen 1',
-      bookings: 110,
-      capacity: 120,
-      price: 250,
-      status: 'Almost Full'
-    },
-    {
-      id: 4,
-      movie: 'The Dark Knight',
-      date: '17 Sep 2026',
-      time: '6:30 PM - 9:00 PM',
-      screen: 'Screen 1',
-      bookings: 120,
-      capacity: 120,
-      price: 200,
-      status: 'Sold Out'
-    }
-  ];
+
 
   return (
     <div className="admin-screenings-page">
@@ -216,44 +171,11 @@ export default function AdminScreenings() {
                 <th>Actions</th>
               </tr>
             </thead>
-            <tbody>
-              {upcomingScreenings.map((screening) => (
-                <tr key={screening.id}>
-                  <td className="fw-600">{screening.movie}</td>
-                  <td>{screening.date}</td>
-                  <td>{screening.time}</td>
-                  <td>{screening.screen}</td>
-                  <td className="bookings-cell">
-                    <div className="booking-numbers">
-                      <strong>{screening.bookings}</strong> / {screening.capacity}
-                    </div>
-                    <div className="mini-progress-bg">
-                      <div 
-                        className={`mini-progress-fill ${screening.bookings === screening.capacity ? 'full' : ''}`} 
-                        style={{ width: `${(screening.bookings / screening.capacity) * 100}%` }}
-                      ></div>
-                    </div>
-                  </td>
-                  <td>{screening.capacity}</td>
-                  <td>{screening.capacity - screening.bookings}</td>
-                  <td>₹{screening.price}</td>
-                  <td>
-                    <span className={`status-badge ${
-                      screening.status === 'Active' ? 'active' : 
-                      screening.status === 'Almost Full' ? 'warning' : 'danger'
-                    }`}>
-                      {screening.status}
-                    </span>
-                  </td>
-                  <td className="actions-cell">
-                    <button className="btn-manage-outline">Manage</button>
-                    <button className="btn-more-outline">
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="1"></circle><circle cx="12" cy="5" r="1"></circle><circle cx="12" cy="19" r="1"></circle></svg>
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
+              <tr>
+                <td colSpan={9} style={{ textAlign: 'center', padding: '40px', color: '#64748b' }}>
+                  No screenings scheduled yet. Add movies and create screenings to get started.
+                </td>
+              </tr>
           </table>
         </div>
 

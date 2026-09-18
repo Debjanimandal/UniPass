@@ -13,96 +13,7 @@ export default function AdminBookings() {
 
   const fullName = user ? `${user.firstName} ${user.lastName}` : 'Admin Name';
 
-  const mockBookings = [
-    {
-      id: 'TKT-1024',
-      student: 'Rahul Das',
-      movie: 'Interstellar',
-      screening: '15 Sep - 6:00 PM',
-      screen: 'Screen 1',
-      seat: 'A5',
-      bookedAt: '14 Sep - 10:42 AM',
-      status: 'VALID',
-      scannedBy: '-'
-    },
-    {
-      id: 'TKT-1023',
-      student: 'Priya Sen',
-      movie: 'Interstellar',
-      screening: '15 Sep - 6:00 PM',
-      screen: 'Screen 1',
-      seat: 'A6',
-      bookedAt: '14 Sep - 10:35 AM',
-      status: 'SCANNED',
-      scannedBy: 'Amit Roy'
-    },
-    {
-      id: 'TKT-1022',
-      student: 'Amit Paul',
-      movie: 'Oppenheimer',
-      screening: '15 Sep - 6:00 PM',
-      screen: 'Screen 1',
-      seat: 'C12',
-      bookedAt: '14 Sep - 9:58 AM',
-      status: 'VALID',
-      scannedBy: '-'
-    },
-    {
-      id: 'TKT-1021',
-      student: 'Sneha Das',
-      movie: 'Inception',
-      screening: '16 Sep - 4:00 PM',
-      screen: 'Screen 2',
-      seat: 'B4',
-      bookedAt: '14 Sep - 9:40 AM',
-      status: 'CANCELLED',
-      scannedBy: '-'
-    },
-    {
-      id: 'TKT-1020',
-      student: 'Priya Sen',
-      movie: 'Interstellar',
-      screening: '15 Sep - 6:00 PM',
-      screen: 'Screen 1',
-      seat: 'A6',
-      bookedAt: '14 Sep - 10:35 AM',
-      status: 'SCANNED',
-      scannedBy: 'Amit Roy'
-    },
-    {
-      id: 'TKT-1019',
-      student: 'Amit Paul',
-      movie: 'Oppenheimer',
-      screening: '15 Sep - 6:00 PM',
-      screen: 'Screen 1',
-      seat: 'C12',
-      bookedAt: '14 Sep - 9:58 AM',
-      status: 'VALID',
-      scannedBy: '-'
-    },
-    {
-      id: 'TKT-1017',
-      student: 'Oppenheimer', // Matching typo in screenshot
-      movie: 'Interstellar',
-      screening: '15 Sep - 6:00 PM',
-      screen: 'Screen 1',
-      seat: 'C3',
-      bookedAt: '14 Sep - 10:42 AM',
-      status: 'VALID',
-      scannedBy: '-'
-    },
-    {
-      id: 'TKT-1016',
-      student: 'Sneha Das',
-      movie: 'Inception',
-      screening: '16 Sep - 4:00 PM',
-      screen: 'Screen 2',
-      seat: 'B4',
-      bookedAt: '14 Sep - 10:40 AM',
-      status: 'VALID',
-      scannedBy: '-'
-    }
-  ];
+
 
   return (
     <div className="admin-bookings-page">
@@ -219,35 +130,16 @@ export default function AdminBookings() {
                 <th>Actions</th>
               </tr>
             </thead>
-            <tbody>
-              {mockBookings.map((booking, index) => (
-                <tr key={index}>
-                  <td className="fw-600">{booking.id}</td>
-                  <td>{booking.student}</td>
-                  <td>{booking.movie}</td>
-                  <td>{booking.screening}</td>
-                  <td>{booking.screen}</td>
-                  <td className="fw-600">{booking.seat}</td>
-                  <td>{booking.bookedAt}</td>
-                  <td>
-                    <span className={`status-pill ${booking.status.toLowerCase()}`}>
-                      {booking.status}
-                    </span>
-                  </td>
-                  <td>{booking.scannedBy}</td>
-                  <td className="actions-cell">
-                    <button className="btn-dropdown">
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
+              <tr>
+                <td colSpan={9} style={{ textAlign: 'center', padding: '40px', color: '#64748b' }}>
+                  No bookings found.
+                </td>
+              </tr>
           </table>
 
           {/* ─── Pagination Footer ─────────────────────────────────── */}
           <div className="table-footer">
-            <span className="showing-text">Showing 1-10 of 428</span>
+            <span className="showing-text">No bookings yet</span>
             <div className="pagination">
               <button className="page-btn">Previous</button>
               <button className="page-btn active">1</button>

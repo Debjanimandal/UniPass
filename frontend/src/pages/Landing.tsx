@@ -1,61 +1,18 @@
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import NavBar from '../components/NavBar';
+import { moviesApi } from '../services/api.client';
 import './Landing.css';
 
-const upcomingFilms = [
-  {
-    title: 'Interstellar',
-    genre: 'Sci-Fi',
-    duration: '169 min',
-    poster: 'https://upload.wikimedia.org/wikipedia/en/b/bc/Interstellar_film_poster.jpg',
-    date: '15 Sept 2026',
-    time: '6:00 PM',
-    screen: 'Screen 1',
-    price: '₹250'
-  },
-  {
-    title: 'Inception',
-    genre: 'Sci-Fi',
-    duration: '148 min',
-    poster: 'https://image.tmdb.org/t/p/w500/9gk7adHYeDvHkCSEqAvQNLV5Uge.jpg',
-    date: '16 Sept 2026',
-    time: '4:00 PM',
-    screen: 'Screen 2',
-    price: '₹220'
-  },
-  {
-    title: 'The Dark Knight',
-    genre: 'Action',
-    duration: '152 min',
-    poster: 'https://image.tmdb.org/t/p/w500/qJ2tW6WMUDux911r6m7haRef0WH.jpg',
-    date: '16 Sept 2026',
-    time: '6:30 PM',
-    screen: 'Screen 1',
-    price: '₹200'
-  },
-  {
-    title: 'Oppenheimer',
-    genre: 'Biography',
-    duration: '180 min',
-    poster: 'https://image.tmdb.org/t/p/w500/8Gxv8gSFCU0XGDykEGv7zR1n2ua.jpg',
-    date: '22 Sept 2026',
-    time: '5:00 PM',
-    screen: 'Screen 2',
-    price: '₹250'
-  },
-  {
-    title: 'Spider-Man: No Way Home',
-    genre: 'Action',
-    duration: '148 min',
-    poster: 'https://upload.wikimedia.org/wikipedia/en/0/00/Spider-Man_No_Way_Home_poster.jpg',
-    date: '22 Sept 2026',
-    time: '6:00 PM',
-    screen: 'Screen 1',
-    price: '₹220'
-  },
-];
-
 export default function Landing() {
+  const [films, setFilms] = useState<any[]>([]);
+
+  useEffect(() => {
+    moviesApi.getAll({ active: true })
+      .then(res => setFilms((res.data?.data ?? []).slice(0, 5)))
+      .catch(() => {});
+  }, []);
+
   return (
     <div className="landing-page">
       <NavBar />
@@ -154,22 +111,22 @@ export default function Landing() {
           </div>
 
           <div className="movies-grid">
-            {upcomingFilms.map((film, idx) => (
-              <div key={idx} className="movie-card">
-                <img src={film.poster} alt={film.title} className="mc-poster" />
-                <div className="mc-body">
-                  <h3 className="mc-title">{film.title}</h3>
-                  <p className="mc-meta">{film.genre} • {film.duration}</p>
-                  <div className="mc-schedule">
-                    <div className="mc-row"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg> {film.date}</div>
-                    <div className="mc-row"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg> {film.time}</div>
-                    <div className="mc-row"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="2" y="7" width="20" height="15" rx="2" ry="2"></rect><polyline points="17 2 12 7 7 2"></polyline></svg> {film.screen}</div>
+            {films.length === 0 ? (
+              <p style={{ color: '#64748b', gridColumn: '1/-1', textAlign: 'center', padding: '40px 0' }}>
+                No screenings available right now — check back soon!
+              </p>
+            ) : (
+              films.map((film, idx) => (
+                <div key={idx} className="movie-card">
+                  <img src={film.posterUrl} alt={film.title} className="mc-poster" onError={e => { e.currentTarget.src = 'https://via.placeholder.com/300x450?text=No+Poster'; }} />
+                  <div className="mc-body">
+                    <h3 className="mc-title">{film.title}</h3>
+                    <p className="mc-meta">{film.genre} &bull; {film.language} &bull; {film.durationMinutes} min</p>
+                    <Link to="/register" className="btn btn-book-now">Book Now</Link>
                   </div>
-                  <div className="mc-price">{film.price}</div>
-                  <Link to="/register" className="btn btn-book-now">Book Now</Link>
                 </div>
-              </div>
-            ))}
+              ))
+            )}
           </div>
         </div>
       </section>

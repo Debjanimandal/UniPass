@@ -6,6 +6,7 @@ import { env } from './config/env';
 // ─── Routers ──────────────────────────────────────────────────────────────────
 import authRouter from './modules/auth/auth.router';
 import bookingsRouter from './modules/bookings/bookings.router';
+import moviesRouter from './modules/movies/movies.router';
 
 const app = express();
 
@@ -33,6 +34,7 @@ app.get('/api/health', (_req, res) => {
 // ─── API Routes ───────────────────────────────────────────────────────────────
 
 app.use('/api/auth', authRouter);
+app.use('/api/movies', moviesRouter);
 app.use('/api/bookings', bookingsRouter);
 
 // ─── 404 Handler ─────────────────────────────────────────────────────────────

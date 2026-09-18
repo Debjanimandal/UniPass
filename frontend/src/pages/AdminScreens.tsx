@@ -13,35 +13,7 @@ export default function AdminScreens() {
 
   const fullName = user ? `${user.firstName} ${user.lastName}` : 'Admin Name';
 
-  const screens = [
-    {
-      id: 1,
-      name: 'Screen 1: Main Auditorium',
-      venue: 'University Auditorium',
-      seats: 120,
-      upcoming: 4,
-      status: 'Active',
-      time: 'Today'
-    },
-    {
-      id: 2,
-      name: 'Screen 2: Innovation Hall',
-      venue: 'Innovation Building',
-      seats: 100,
-      upcoming: 3,
-      status: 'Active',
-      time: 'Today'
-    },
-    {
-      id: 3,
-      name: 'Screen 3: Open Air Screen',
-      venue: 'Campus Amphitheatre',
-      seats: 80,
-      upcoming: 1,
-      status: 'Active',
-      time: 'Today'
-    }
-  ];
+
 
   const AuditoriumIcon = () => (
     <svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" className="screen-card-icon">
@@ -201,40 +173,9 @@ export default function AdminScreens() {
 
         {/* ─── Grid View ─────────────────────────────────────────── */}
         <div className="screens-grid">
-          {screens.map(screen => (
-            <div key={screen.id} className="screen-card">
-              <div className="screen-card-header">
-                <div className="screen-icon-wrapper">
-                  {screen.id === 3 ? <OpenAirIcon /> : <AuditoriumIcon />}
-                </div>
-                <div className="screen-title-area">
-                  <h3>{screen.name}</h3>
-                  <p>Venue: {screen.venue}</p>
-                </div>
-              </div>
-              
-              <div className="screen-card-stats">
-                <div className="stat-col">
-                  <strong>{screen.seats}</strong> Seats
-                </div>
-                <div className="stat-col">
-                  <strong>{screen.upcoming}</strong> Upcoming Screenings
-                </div>
-              </div>
-              
-              <div className="screen-card-status">
-                <span className="status-badge active">Active</span>
-              </div>
-              
-              <div className="screen-card-actions">
-                <button className="btn-manage-seats">Manage Seats</button>
-                <button className="btn-edit">Edit</button>
-                <button className="btn-more">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="1"></circle><circle cx="19" cy="12" r="1"></circle><circle cx="5" cy="12" r="1"></circle></svg>
-                </button>
-              </div>
-            </div>
-          ))}
+          <div style={{ textAlign: 'center', padding: '60px', color: '#64748b', gridColumn: '1/-1' }}>
+            No screens added yet. Click "+ Add Screen" to create one.
+          </div>
         </div>
 
         {/* ─── Table View ────────────────────────────────────────── */}
@@ -251,24 +192,11 @@ export default function AdminScreens() {
                 <th>Actions</th>
               </tr>
             </thead>
-            <tbody>
-              {screens.map(screen => (
-                <tr key={screen.id}>
-                  <td className="fw-600">{screen.name}</td>
-                  <td>{screen.venue}</td>
-                  <td>{screen.seats}</td>
-                  <td>{screen.upcoming}</td>
-                  <td><span className="status-badge active">{screen.status}</span></td>
-                  <td>{screen.time}</td>
-                  <td className="actions-cell">
-                    <button className="btn-manage-outline">Manage</button>
-                    <button className="btn-more-outline">
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="1"></circle><circle cx="19" cy="12" r="1"></circle><circle cx="5" cy="12" r="1"></circle></svg>
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
+              <tr>
+                <td colSpan={7} style={{ textAlign: 'center', padding: '40px', color: '#64748b' }}>
+                  No screens configured yet.
+                </td>
+              </tr>
           </table>
         </div>
 

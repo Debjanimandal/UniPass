@@ -55,7 +55,30 @@ export const moviesApi = {
     api.get('/movies', { params }),
 
   getById: (id: number) => api.get(`/movies/${id}`),
+
+  create: (data: {
+    title: string;
+    description: string;
+    durationMinutes: number;
+    language: string;
+    genre: string;
+    posterUrl: string;
+    isActive?: boolean;
+  }) => api.post('/movies', data),
+
+  update: (id: number, data: Partial<{
+    title: string;
+    description: string;
+    durationMinutes: number;
+    language: string;
+    genre: string;
+    posterUrl: string;
+    isActive: boolean;
+  }>) => api.patch(`/movies/${id}`, data),
+
+  delete: (id: number) => api.delete(`/movies/${id}`),
 };
+
 
 // ─── Screenings API ───────────────────────────────────────────────
 

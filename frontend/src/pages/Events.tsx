@@ -7,61 +7,7 @@ export default function Events() {
   const { user } = useAuthStore();
   const fullName = user ? `${user.firstName} ${user.lastName}` : 'Student Name';
 
-  // Hardcoded events to match the image
-  const upcomingEvents = [
-    {
-      id: 1,
-      title: 'INCEPTION',
-      meta: 'Sci-Fi • 169 min',
-      date: '15 September 2026',
-      time: '6:00 PM - 9:00 PM',
-      screen: 'Screen 1',
-      venue: 'University Auditorium',
-      price: 250,
-      status: 'available',
-      statusText: '48 seats available',
-      posterUrl: '/posters/inception.jpg'
-    },
-    {
-      id: 2,
-      title: 'THE DARK KNIGHT',
-      meta: 'Sci-Fi • 169 min',
-      date: '15 September 2026',
-      time: '6:00 PM - 9:00 PM',
-      screen: 'Screen 1',
-      venue: 'University Auditorium',
-      price: 250,
-      status: 'few',
-      statusText: 'Few seats left',
-      posterUrl: '/posters/darkknight.jpg'
-    },
-    {
-      id: 3,
-      title: 'OPPENHEIMER',
-      meta: 'Sci-Fi • 169 min',
-      date: '15 September 2026',
-      time: '6:00 PM - 9:00 PM',
-      screen: 'Screen 1',
-      venue: 'University Auditorium',
-      price: 250,
-      status: 'few',
-      statusText: 'Few seats left',
-      posterUrl: '/posters/oppenheimer.jpg'
-    },
-    {
-      id: 4,
-      title: 'SPIDER-MAN: NO WAY HOME',
-      meta: 'Sci-Fi • 169 min',
-      date: '15 September 2026',
-      time: '6:00 PM - 9:00 PM',
-      screen: 'Screen 1',
-      venue: 'University Auditorium',
-      price: 250,
-      status: 'soldout',
-      statusText: 'Sold out',
-      posterUrl: '/posters/spiderman-noway.jpg'
-    }
-  ];
+
 
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -192,37 +138,11 @@ export default function Events() {
         </div>
       </div>
 
-      {/* ─── Featured Screening ────────────────────────────────────── */}
+      {/* ─── Featured Screening ──────────────────────────────────── */}
       <section className="events-section">
         <h2 className="section-title">Featured Screening</h2>
-        
-        <div className="featured-card">
-          <img 
-            src="https://upload.wikimedia.org/wikipedia/en/b/bc/Interstellar_film_poster.jpg" 
-            alt="Interstellar" 
-            className="featured-poster" 
-          />
-          <div className="featured-details">
-            <div className="featured-header">
-              <h2>INTERSTELLAR</h2>
-              <div className="featured-price">₹250 <span>/ seat</span></div>
-            </div>
-            
-            <div className="featured-grid-info">
-              <div className="featured-info-block">
-                <p>15 September 2026</p>
-                <p>6:00 PM</p>
-              </div>
-              <div className="featured-info-block">
-                <p>Screen 1</p>
-                <p>University Auditorium</p>
-              </div>
-            </div>
-            
-            <Link to="/student/screenings/1/book" className="btn-book-now" style={{ display: 'block', textAlign: 'center', textDecoration: 'none' }}>
-              Book Now
-            </Link>
-          </div>
+        <div style={{ textAlign: 'center', padding: '40px', color: '#64748b', background: '#f8fafc', borderRadius: '12px' }}>
+          No featured screening at the moment. Check back soon!
         </div>
       </section>
 
@@ -234,39 +154,9 @@ export default function Events() {
         </div>
         
         <div className="events-grid">
-          {upcomingEvents.map((event) => (
-            <div key={event.id} className="event-card">
-              <div className="event-card-top">
-                <img src={event.posterUrl} alt={event.title} className="event-poster-small" />
-                <div className="event-card-details">
-                  <h3>{event.title}</h3>
-                  <p className="event-card-meta">{event.meta}</p>
-                  <div className="event-card-info">
-                    <p>{event.date}</p>
-                    <p>{event.time}</p>
-                    <p>{event.screen}</p>
-                    <p>{event.venue}</p>
-                  </div>
-                </div>
-              </div>
-              
-              <div className="event-card-footer">
-                <div className="event-price">₹{event.price} <span>/ seat</span></div>
-                <div className={`event-status status-${event.status}`}>
-                  {getStatusIcon(event.status)}
-                  <span>{event.statusText}</span>
-                </div>
-              </div>
-              
-              {event.status === 'soldout' ? (
-                <button className="btn-sold-out" disabled>Sold Out</button>
-              ) : (
-                <Link to={`/student/screenings/${event.id}/book`} className="btn-book-now-small" style={{ display: 'block', textAlign: 'center', textDecoration: 'none' }}>
-                  Book Now
-                </Link>
-              )}
-            </div>
-          ))}
+          <div style={{ textAlign: 'center', padding: '60px', color: '#64748b', gridColumn: '1/-1' }}>
+            No upcoming events scheduled yet. Check back soon!
+          </div>
         </div>
       </section>
 
