@@ -778,3 +778,52 @@ ul, ol {
 .delay-2 { animation-delay: 0.2s; }
 .delay-3 { animation-delay: 0.3s; }
 .delay-4 { animation-delay: 0.4s; }
+
+/* ─── Static Button Styles (User Preference) ─────────────────────── */
+/* Prevents buttons from changing background/text color on hover/focus */
+.btn-my-bookings:hover,
+.btn-my-bookings:active,
+.btn-my-bookings:focus,
+.btn-book-seat:hover,
+.btn-book-seat:active,
+.btn-book-seat:focus,
+.btn-book-now:hover,
+.btn-book-now:active,
+.btn-book-now:focus,
+.btn-book-now-small:hover,
+.btn-book-now-small:active,
+.btn-book-now-small:focus {
+  background-color: #2b5c9d !important;
+  color: white !important;
+  transform: none !important;
+}
+
+/* ─── Sticky Navbars (User Preference) ───────────────────────── */
+/* Make the top navbars sticky */
+.student-navbar,
+.events-top-nav,
+.films-top-nav,
+.bookings-top-nav,
+.profile-top-nav,
+.admin-top-nav {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+/* Make the secondary blue navbars sticky, right below the top navbar */
+.student-secondary-nav {
+  position: sticky;
+  top: 64px; /* Matches .student-navbar height */
+  z-index: 999;
+}
+
+.events-blue-nav,
+.films-blue-nav,
+.bookings-blue-nav,
+.profile-blue-nav,
+.admin-blue-nav {
+  position: sticky;
+  top: 60px; /* Matches most other top-nav heights */
+  z-index: 999;
+}

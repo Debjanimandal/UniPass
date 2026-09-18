@@ -137,34 +137,7 @@ export default function AdminProfile() {
               <div className="info-card">
                 <h3>Recent Administrative Activity</h3>
                 <div className="activity-list">
-                  <div className="activity-item">
-                    <div className="activity-icon blue"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg></div>
-                    <div className="activity-details">
-                      <strong>Published</strong>
-                      <span>Interstellar Screening · Today · 08:45 PM</span>
-                    </div>
-                  </div>
-                  <div className="activity-item">
-                    <div className="activity-icon blue"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg></div>
-                    <div className="activity-details">
-                      <strong>Created</strong>
-                      <span>Screening Inception · Today · 07:30 PM</span>
-                    </div>
-                  </div>
-                  <div className="activity-item">
-                    <div className="activity-icon blue"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg></div>
-                    <div className="activity-details">
-                      <strong>Updated</strong>
-                      <span>Screen 1 Main Auditorium · Yesterday</span>
-                    </div>
-                  </div>
-                  <div className="activity-item">
-                    <div className="activity-icon blue"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><line x1="20" y1="8" x2="20" y2="14"></line><line x1="23" y1="11" x2="17" y2="11"></line></svg></div>
-                    <div className="activity-details">
-                      <strong>Added User</strong>
-                      <span>Rahul Das · Yesterday</span>
-                    </div>
-                  </div>
+                  <div style={{ color: '#64748b', padding: '16px' }}>No recent activity.</div>
                 </div>
               </div>
             </div>

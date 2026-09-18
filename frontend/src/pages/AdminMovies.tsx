@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../store/auth.store';
 import { moviesApi } from '../services/api.client';
@@ -13,12 +13,13 @@ interface Movie {
   genre: string;
   posterUrl: string;
   isActive: boolean;
+  validUntil?: string | null;
   createdAt: string;
   _count?: { screenings: number };
 }
 
 const EMPTY_FORM = {
-  title: '', description: '', durationMinutes: '', language: '', genre: '', posterUrl: '', isActive: true,
+  title: '', description: '', durationMinutes: '', language: '', genre: '', posterUrl: '', isActive: true, validUntil: ''
 };
 
 export default function AdminMovies() {
@@ -73,6 +74,7 @@ export default function AdminMovies() {
       genre: movie.genre,
       posterUrl: movie.posterUrl,
       isActive: movie.isActive,
+      validUntil: movie.validUntil ? movie.validUntil.split('T')[0] : '',
     });
     setFormError('');
     setShowModal(true);
@@ -98,6 +100,7 @@ export default function AdminMovies() {
         genre: form.genre,
         posterUrl: form.posterUrl,
         isActive: form.isActive,
+        validUntil: form.validUntil ? new Date(form.validUntil).toISOString() : null,
       };
       if (editingId) {
         await moviesApi.update(editingId, payload);
@@ -195,7 +198,7 @@ export default function AdminMovies() {
 
         {/* ─── Summary ────────────────────────────────────────── */}
         <div className="movies-summary">
-          {movies.length} Movies &bull; <span className="highlight-green">{activeCount} Active</span> &bull; <span className="highlight-red">{inactiveCount} Inactive</span>
+          {movies.length} Movies &bull; <span className="highlight-blue">{activeCount} Active</span> &bull; <span className="highlight-gray">{inactiveCount} Inactive</span>
         </div>
 
         {/* ─── Loading ────────────────────────────────────────── */}
@@ -226,16 +229,26 @@ export default function AdminMovies() {
                   <div className="admin-movie-card-right">
                     <div className="movie-title">{movie.title}</div>
                     <div className="movie-meta">{movie.genre} &bull; {movie.language} &bull; {movie.durationMinutes} min</div>
-                    <span className={`status-badge ${movie.isActive ? 'published' : 'inactive'}`}>
-                      {movie.isActive ? 'Active' : 'Inactive'}
-                    </span>
+                    {(() => {
+                      const isExpired = movie.validUntil && new Date(movie.validUntil) < new Date();
+                      
+                      let daysText = '';
+                      if (movie.validUntil && !isExpired) {
+                        const daysLeft = Math.ceil((new Date(movie.validUntil).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
+                        daysText = ` • ${daysLeft} day${daysLeft !== 1 ? 's' : ''} left`;
+                      }
+
+                      if (!movie.isActive) return <span className="status-badge inactive">Inactive{daysText}</span>;
+                      if (isExpired) return <span className="status-badge warning" style={{ background: '#f59e0b', color: '#fff' }}>Expired</span>;
+                      return <span className="status-badge published">Active{daysText}</span>;
+                    })()}
                     <div className="screenings-info">{movie._count?.screenings ?? 0} Screenings</div>
                     <div className="admin-movie-card-actions">
                       <button className="btn-outline" onClick={() => toggleActive(movie)}>
                         {movie.isActive ? 'Deactivate' : 'Activate'}
                       </button>
                       <button className="btn-outline edit" style={{ color: '#fff', background: '#1e3a8a', border: '1px solid #1e3a8a' }} onClick={() => openEdit(movie)}>Edit</button>
-                      <button className="btn-outline" style={{ color: '#dc2626', borderColor: '#dc2626' }} onClick={() => handleDelete(movie.movieId, movie.title)}>Delete</button>
+                      <button className="btn-outline" onClick={() => handleDelete(movie.movieId, movie.title)}>Delete</button>
                     </div>
                   </div>
                 </div>
@@ -294,6 +307,11 @@ export default function AdminMovies() {
                   <input type="checkbox" checked={Boolean(form.isActive)} onChange={e => setForm(f => ({ ...f, isActive: e.target.checked }))} />
                   <span className="toggle-slider"></span>
                 </label>
+              </div>
+              <div className="modal-field">
+                <label>Valid Until (Optional)</label>
+                <input type="date" value={form.validUntil} onChange={e => setForm(f => ({ ...f, validUntil: e.target.value }))} style={{ width: '100%', padding: '10px', border: '1px solid #cbd5e1', borderRadius: '6px', fontSize: '14px', marginTop: '6px' }} />
+                <span style={{ fontSize: '12px', color: '#64748b', marginTop: '4px', display: 'block' }}>If set, the movie will automatically expire after this date.</span>
               </div>
             </div>
 

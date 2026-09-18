@@ -94,12 +94,40 @@ export const screeningsApi = {
 // ─── Bookings API ─────────────────────────────────────────────────
 
 export const bookingsApi = {
-  create: (data: { screening_id: number; seat_id: number }) =>
+  create: (data: { screeningId: number; seatIds: number[] }) =>
     api.post('/bookings', data),
 
-  getMyBookings: () => api.get('/bookings'),
+  getMyBookings: () => api.get('/bookings/my-bookings'),
 
   cancel: (id: number) => api.patch(`/bookings/${id}/cancel`),
+};
+
+// ─── Screens API ──────────────────────────────────────────────────
+
+export const screensApi = {
+  getAll: (params?: { active?: boolean; search?: string; venue?: string }) =>
+    api.get('/screens', { params }),
+
+  getById: (id: number) => api.get(`/screens/${id}`),
+
+  create: (data: {
+    screenName: string;
+    venue: string;
+    description: string;
+    isActive: boolean;
+  }) => api.post('/screens', data),
+
+  update: (
+    id: number,
+    data: Partial<{
+      screenName: string;
+      venue: string;
+      description: string;
+      isActive: boolean;
+    }>
+  ) => api.patch(`/screens/${id}`, data),
+
+  delete: (id: number) => api.delete(`/screens/${id}`),
 };
 
 // ─── Tickets API ──────────────────────────────────────────────────

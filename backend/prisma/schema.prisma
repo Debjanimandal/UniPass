@@ -73,6 +73,7 @@ model Movie {
   genre           String
   posterUrl       String   @map("poster_url")
   isActive        Boolean  @default(true) @map("is_active")
+  validUntil      DateTime? @map("valid_until")
   createdAt       DateTime @default(now()) @map("created_at")
 
   // One movie can have many screenings

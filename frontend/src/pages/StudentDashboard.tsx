@@ -1,4 +1,6 @@
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import axios from 'axios';
 import { useAuthStore } from '../store/auth.store';
 import './StudentDashboard.css';
 
@@ -13,6 +15,26 @@ export default function StudentDashboard() {
   
   // Extract user's full name, or fallback to 'Student' if not available
   const fullName = user ? `${user.firstName} ${user.lastName}` : 'Student';
+
+  const [movies, setMovies] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchMovies = async () => {
+      try {
+        const res = await axios.get('http://localhost:3001/api/movies?active=true');
+        if (res.data.success) {
+          // just take the first 3 movies as "Upcoming Events"
+          setMovies(res.data.data.slice(0, 3));
+        }
+      } catch (error) {
+        console.error('Error fetching movies:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchMovies();
+  }, []);
 
   return (
     <div className="student-dashboard-page">
@@ -54,44 +76,32 @@ export default function StudentDashboard() {
           <h2>Upcoming Events</h2>
           
           <div className="events-list">
-            {/* Event 1 */}
-            <div className="event-item">
-              <div className="event-date-box">
-                <span className="day">15</span>
-                <span className="month">Sept</span>
-                <span className="year">2026</span>
-              </div>
-              <div className="event-details">
-                <h3>University University Event</h3>
-                <p>6:00 PM • Screen 1, University</p>
-              </div>
-            </div>
-            
-            {/* Event 2 */}
-            <div className="event-item">
-              <div className="event-date-box">
-                <span className="day">20</span>
-                <span className="month">Sept</span>
-                <span className="year">2026</span>
-              </div>
-              <div className="event-details">
-                <h3>University University Event</h3>
-                <p>6:00 PM • Screen 1, University</p>
-              </div>
-            </div>
-
-            {/* Event 3 */}
-            <div className="event-item">
-              <div className="event-date-box">
-                <span className="day">Wed</span>
-                <span className="month">Sept</span>
-                <span className="year">2026</span>
-              </div>
-              <div className="event-details">
-                <h3>University University Schonight</h3>
-                <p>6:00 PM • Screen 2, University</p>
-              </div>
-            </div>
+            {loading ? (
+              <p style={{ color: '#64748b', fontSize: '14px' }}>Loading upcoming events...</p>
+            ) : movies.length > 0 ? (
+              movies.map((movie) => {
+                const dateObj = new Date(movie.validUntil || movie.createdAt);
+                const day = dateObj.getDate();
+                const month = dateObj.toLocaleDateString('en-US', { month: 'short' });
+                const year = dateObj.getFullYear();
+                
+                return (
+                  <div className="event-item" key={movie.movieId}>
+                    <div className="event-date-box">
+                      <span className="day">{day}</span>
+                      <span className="month">{month}</span>
+                      <span className="year">{year}</span>
+                    </div>
+                    <div className="event-details">
+                      <h3>{movie.title}</h3>
+                      <p>{movie.genre} • {movie.language}</p>
+                    </div>
+                  </div>
+                );
+              })
+            ) : (
+              <p style={{ color: '#64748b', fontSize: '14px' }}>No upcoming events right now.</p>
+            )}
           </div>
         </div>
 
@@ -112,16 +122,8 @@ export default function StudentDashboard() {
               </div>
               
               <div className="ticket-body">
-                {/* QR Code Placeholder (Mock image) */}
-                <img 
-                  src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=MockTicketData123" 
-                  alt="QR Code" 
-                  className="ticket-qr-placeholder" 
-                />
-                
-                <div className="ticket-info">
-                  <h3>INTERSTELLAR</h3>
-                  <p>15 Sept 2026<br />6:00 PM<br />Screen 1 • Seat A3</p>
+                <div style={{ padding: '24px', textAlign: 'center', color: '#64748b', width: '100%' }}>
+                  No upcoming tickets.
                 </div>
               </div>
             </div>

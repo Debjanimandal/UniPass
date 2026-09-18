@@ -13,7 +13,18 @@ import {
 export async function listMovies(req: Request, res: Response) {
   try {
     const activeOnly = req.query.active === 'true';
-    const movies = await getAllMovies(activeOnly);
+    const category = req.query.category as string | undefined;
+    const language = req.query.language as string | undefined;
+    const search = req.query.search as string | undefined;
+    const date = req.query.date as string | undefined;
+    
+    const movies = await getAllMovies({
+      activeOnly,
+      category,
+      language,
+      search,
+      date,
+    });
     res.json({ success: true, message: 'Movies fetched.', data: movies });
   } catch (err: any) {
     console.error('[listMovies]', err);
@@ -24,7 +35,7 @@ export async function listMovies(req: Request, res: Response) {
 // GET /api/movies/:id
 export async function getMovie(req: Request, res: Response) {
   try {
-    const id = parseInt(req.params.id);
+    const id = parseInt(req.params.id as string);
     if (isNaN(id)) return res.status(400).json({ success: false, error: { code: 'INVALID_ID', message: 'Invalid movie ID.' } });
     const movie = await getMovieById(id);
     res.json({ success: true, message: 'Movie fetched.', data: movie });
@@ -55,7 +66,7 @@ export async function addMovie(req: Request, res: Response) {
 // PATCH /api/movies/:id  — admin only
 export async function editMovie(req: Request, res: Response) {
   try {
-    const id = parseInt(req.params.id);
+    const id = parseInt(req.params.id as string);
     if (isNaN(id)) return res.status(400).json({ success: false, error: { code: 'INVALID_ID', message: 'Invalid movie ID.' } });
     const parsed = UpdateMovieSchema.safeParse(req.body);
     if (!parsed.success) {
@@ -75,7 +86,7 @@ export async function editMovie(req: Request, res: Response) {
 // DELETE /api/movies/:id  — admin only
 export async function removeMovie(req: Request, res: Response) {
   try {
-    const id = parseInt(req.params.id);
+    const id = parseInt(req.params.id as string);
     if (isNaN(id)) return res.status(400).json({ success: false, error: { code: 'INVALID_ID', message: 'Invalid movie ID.' } });
     await deleteMovie(id);
     res.json({ success: true, message: 'Movie deleted successfully.', data: null });

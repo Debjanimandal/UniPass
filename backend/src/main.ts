@@ -7,7 +7,7 @@ import { env } from './config/env';
 import authRouter from './modules/auth/auth.router';
 import bookingsRouter from './modules/bookings/bookings.router';
 import moviesRouter from './modules/movies/movies.router';
-
+import screensRouter from './modules/screens/screens.router';
 const app = express();
 
 // ─── Middleware ───────────────────────────────────────────────────────────────
@@ -36,6 +36,7 @@ app.get('/api/health', (_req, res) => {
 app.use('/api/auth', authRouter);
 app.use('/api/movies', moviesRouter);
 app.use('/api/bookings', bookingsRouter);
+app.use('/api/screens', screensRouter);
 
 // ─── 404 Handler ─────────────────────────────────────────────────────────────
 

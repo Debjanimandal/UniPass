@@ -11,6 +11,7 @@ export const CreateMovieSchema = z.object({
   genre:           z.string().min(1, 'Genre is required'),
   posterUrl:       z.string().url('Poster URL must be a valid URL'),
   isActive:        z.boolean().optional().default(true),
+  validUntil:      z.union([z.string(), z.date()]).optional().nullable(),
 });
 
 export const UpdateMovieSchema = CreateMovieSchema.partial();
@@ -20,9 +21,48 @@ export type UpdateMovieInput = z.infer<typeof UpdateMovieSchema>;
 
 // ─── Service Functions ────────────────────────────────────────────────────────
 
-export async function getAllMovies(activeOnly = false) {
+export async function getAllMovies(options?: {
+  activeOnly?: boolean;
+  category?: string;
+  language?: string;
+  search?: string;
+  date?: string;
+}) {
+  const where: any = {};
+  
+  if (options?.activeOnly) {
+    where.isActive = true;
+    where.OR = [
+      { validUntil: null },
+      { validUntil: { gt: new Date() } }
+    ];
+  }
+
+  if (options?.category) {
+    where.genre = { contains: options.category, mode: 'insensitive' };
+  }
+
+  if (options?.language) {
+    where.language = { contains: options.language, mode: 'insensitive' };
+  }
+
+  if (options?.search) {
+    where.title = { contains: options.search, mode: 'insensitive' };
+  }
+
+  if (options?.date) {
+    const selectedDate = new Date(options.date);
+    // If the movie has validUntil, it must be >= selectedDate
+    // Also we don't strictly check createdAt because a movie is considered "happening" today if it's active and valid.
+    const activeCondition = where.OR || [];
+    where.OR = [
+      { validUntil: null },
+      { validUntil: { gte: selectedDate } }
+    ];
+  }
+
   return prisma.movie.findMany({
-    where: activeOnly ? { isActive: true } : undefined,
+    where,
     orderBy: { createdAt: 'desc' },
     include: {
       _count: { select: { screenings: true } },

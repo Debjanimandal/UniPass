@@ -133,64 +133,9 @@ export default function AdminDashboard() {
               </thead>
               <tbody>
                 <tr>
-                  <td>Interstellar</td>
-                  <td>15 Sep 2026</td>
-                  <td>6:00 PM-9:00 PM</td>
-                  <td>Screen 1</td>
-                  <td>72/120</td>
-                  <td>
-                    <div className="td-availability">48 available</div>
-                    <div className="progress-bar-container"><div className="progress-bar-fill" style={{ width: '60%' }}></div></div>
+                  <td colSpan={7} style={{ textAlign: 'center', color: '#64748b', padding: '24px' }}>
+                    No upcoming screenings available.
                   </td>
-                  <td><span className="status-badge active">Active</span></td>
-                </tr>
-                <tr>
-                  <td>Inception</td>
-                  <td>16 Sep 2026</td>
-                  <td>4:00 PM-6:30 PM</td>
-                  <td>Screen 2</td>
-                  <td>88/100</td>
-                  <td>
-                    <div className="td-availability">12 available</div>
-                    <div className="progress-bar-container"><div className="progress-bar-fill" style={{ width: '88%' }}></div></div>
-                  </td>
-                  <td><span className="status-badge active">Active</span></td>
-                </tr>
-                <tr>
-                  <td>Oppenheimer</td>
-                  <td>15 Sep 2026</td>
-                  <td>6:00 PM-9:00 PM</td>
-                  <td>Screen 1</td>
-                  <td>110/120</td>
-                  <td>
-                    <div className="td-availability">10 available</div>
-                    <div className="progress-bar-container"><div className="progress-bar-fill warning" style={{ width: '91%' }}></div></div>
-                  </td>
-                  <td><span className="status-badge warning">Almost Full</span></td>
-                </tr>
-                <tr>
-                  <td>Interstellar</td>
-                  <td>15 Sep 2026</td>
-                  <td>6:00 PM-9:00 PM</td>
-                  <td>Screen 1</td>
-                  <td>72/120</td>
-                  <td>
-                    <div className="td-availability">12 available</div>
-                    <div className="progress-bar-container"><div className="progress-bar-fill" style={{ width: '85%' }}></div></div>
-                  </td>
-                  <td><span className="status-badge active">Active</span></td>
-                </tr>
-                <tr>
-                  <td>Inception</td>
-                  <td>16 Sep 2026</td>
-                  <td>4:00 PM-6:30 PM</td>
-                  <td>Screen 2</td>
-                  <td>88/100</td>
-                  <td>
-                    <div className="td-availability">10 available</div>
-                    <div className="progress-bar-container"><div className="progress-bar-fill warning" style={{ width: '90%' }}></div></div>
-                  </td>
-                  <td><span className="status-badge warning">Almost Full</span></td>
                 </tr>
               </tbody>
             </table>
@@ -306,21 +251,7 @@ export default function AdminDashboard() {
           <div className="admin-card">
             <h2 className="admin-card-title" style={{ marginBottom: '16px' }}>Publishing Status</h2>
             <div className="pub-grid">
-              <div className="pub-card published">
-                <div className="title">Interstellar</div>
-                <div className="info">Published, 3 screenings</div>
-                <Link to="/admin/movies" className="admin-link-blue" style={{ fontSize: '12px' }}>Manage</Link>
-              </div>
-              <div className="pub-card published">
-                <div className="title">Inception</div>
-                <div className="info">Published, 2 screenings</div>
-                <Link to="/admin/movies" className="admin-link-blue" style={{ fontSize: '12px' }}>Manage</Link>
-              </div>
-              <div className="pub-card">
-                <div className="title">The Dark Knight</div>
-                <div className="info">Draft, 0 screenings</div>
-                <Link to="/admin/movies" className="admin-link-blue" style={{ fontSize: '12px' }}>Publish</Link>
-              </div>
+              <div style={{ color: '#64748b', padding: '16px' }}>No movies published yet.</div>
             </div>
           </div>
 
@@ -345,44 +276,9 @@ export default function AdminDashboard() {
               </thead>
               <tbody>
                 <tr>
-                  <td>TKT-1024</td>
-                  <td>Rahul Das</td>
-                  <td>Interstellar</td>
-                  <td>15 Sep - 6 PM</td>
-                  <td>A5</td>
-                  <td><span className="status-badge valid">VALID</span></td>
-                </tr>
-                <tr>
-                  <td>TKT-1023</td>
-                  <td>Rahul Das</td>
-                  <td>Oppenheimer</td>
-                  <td>15 Sep - 6 PM</td>
-                  <td>A5</td>
-                  <td><span className="status-badge valid">VALID</span></td>
-                </tr>
-                <tr>
-                  <td>TKT-1021</td>
-                  <td>Rahul Das</td>
-                  <td>Inception</td>
-                  <td>16 Sep - 6 PM</td>
-                  <td>A3</td>
-                  <td><span className="status-badge valid">VALID</span></td>
-                </tr>
-                <tr>
-                  <td>TKT-1020</td>
-                  <td>Rahul Das</td>
-                  <td>Oppenheimer</td>
-                  <td>15 Sep - 6 PM</td>
-                  <td>A5</td>
-                  <td><span className="status-badge valid">VALID</span></td>
-                </tr>
-                <tr>
-                  <td>TKT-1019</td>
-                  <td>Rahul Das</td>
-                  <td>Interstellar</td>
-                  <td>15 Sep - 6 PM</td>
-                  <td>A5</td>
-                  <td><span className="status-badge valid">VALID</span></td>
+                  <td colSpan={6} style={{ textAlign: 'center', color: '#64748b', padding: '24px' }}>
+                    No recent bookings.
+                  </td>
                 </tr>
               </tbody>
             </table>

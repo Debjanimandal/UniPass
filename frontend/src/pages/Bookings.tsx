@@ -73,29 +73,8 @@ export default function Bookings() {
           
           {/* Screening Info Card */}
           <div className="booking-card screening-info-card">
-            <img 
-              src="https://image.tmdb.org/t/p/w500/gPbM0MK8CP8A174rmUwGsADNYKD.jpg" 
-              alt="Interstellar" 
-              className="movie-poster-thumb" 
-            />
-            <div className="screening-details">
-              <h2>INTERSTELLAR</h2>
-              <p className="movie-meta">Sci-Fi • 169 min</p>
-              
-              <div className="screening-grid-info">
-                <div className="info-block">
-                  <p>15 September 2026</p>
-                  <p>6:00 PM – 9:00 PM</p>
-                </div>
-                <div className="info-block">
-                  <p>Screen 1</p>
-                  <p>University Auditorium</p>
-                </div>
-              </div>
-              
-              <div className="ticket-price-block">
-                ₹250 / seat
-              </div>
+            <div style={{ padding: '24px', color: '#64748b', textAlign: 'center', width: '100%' }}>
+              No movie selected.
             </div>
           </div>
 
