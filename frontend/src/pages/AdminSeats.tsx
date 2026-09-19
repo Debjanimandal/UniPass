@@ -1,28 +1,80 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../store/auth.store';
+import { screensApi, seatsApi } from '../services/api.client';
 import './AdminSeats.css';
 
-type SeatStatus = 'available' | 'selected' | 'inactive' | 'premium';
+interface ScreenData {
+  screenId: number;
+  screenName: string;
+  _count?: { seats: number };
+}
 
-interface Seat {
-  id: string;
-  row: string;
-  number: number;
-  type: string;
-  status: SeatStatus;
+interface SeatData {
+  seatId: number;
+  screenId: number;
+  rowNo: number;
+  seatNo: number;
+  seatCode: string;
+  seatType: 'REGULAR' | 'PREMIUM' | 'VIP' | 'WHEELCHAIR';
+  isActive: boolean;
 }
 
 export default function AdminSeats() {
   const { user, logout } = useAuthStore();
   const navigate = useNavigate();
-  const [selectedSeat, setSelectedSeat] = useState<Seat | null>({
-    id: 'A5',
-    row: 'A',
-    number: 5,
-    type: 'Premium',
-    status: 'premium'
-  });
+
+  const [screens, setScreens] = useState<ScreenData[]>([]);
+  const [selectedScreenId, setSelectedScreenId] = useState<string>('');
+  
+  const [seats, setSeats] = useState<SeatData[]>([]);
+  const [selectedSeat, setSelectedSeat] = useState<SeatData | null>(null);
+  
+  const [searchQuery, setSearchQuery] = useState('');
+
+  // Bulk generator state
+  const [genRows, setGenRows] = useState(10);
+  const [genSeats, setGenSeats] = useState(15);
+  const [isGenerating, setIsGenerating] = useState(false);
+
+  useEffect(() => {
+    loadScreens();
+  }, []);
+
+  useEffect(() => {
+    if (selectedScreenId) {
+      loadSeats(selectedScreenId);
+    } else {
+      setSeats([]);
+      setSelectedSeat(null);
+    }
+  }, [selectedScreenId]);
+
+  const loadScreens = async () => {
+    try {
+      const res = await screensApi.getAll();
+      if (res.data?.data) {
+        setScreens(res.data.data);
+        if (res.data.data.length > 0) {
+          setSelectedScreenId(String(res.data.data[0].screenId));
+        }
+      }
+    } catch (err) {
+      console.error('Failed to load screens', err);
+    }
+  };
+
+  const loadSeats = async (screenId: string) => {
+    try {
+      const res = await seatsApi.getByScreen(screenId);
+      if (res.data?.data) {
+        setSeats(res.data.data);
+        setSelectedSeat(null);
+      }
+    } catch (err) {
+      console.error('Failed to load seats', err);
+    }
+  };
 
   const handleLogoutHome = () => {
     logout();
@@ -31,45 +83,69 @@ export default function AdminSeats() {
 
   const fullName = user ? `${user.firstName} ${user.lastName}` : 'Admin Name';
 
-  // Generate a mock grid
-  const rows = ['A', 'B', 'C', 'E', 'F'];
-  const cols = 12;
-  
-  const generateSeats = (): Seat[] => {
-    const seats: Seat[] = [];
-    rows.forEach(row => {
-      for (let i = 1; i <= cols; i++) {
-        let status: SeatStatus = 'available';
-        let type = 'Regular';
-        
-        if (i >= 4 && i <= 5) status = 'selected';
-        else if (i >= 7 && i <= 9) status = 'inactive';
-        else if (i >= 11) {
-          status = 'premium';
-          type = 'Premium';
-        }
-
-        seats.push({
-          id: `${row}${i}`,
-          row,
-          number: i,
-          type,
-          status
-        });
-      }
-    });
-    return seats;
-  };
-
-  const seats = generateSeats();
-
-  const handleSeatClick = (seat: Seat) => {
-    if (seat.status !== 'inactive') {
-      setSelectedSeat(seat);
+  const handleGenerateLayout = async () => {
+    if (!selectedScreenId) return;
+    if (!window.confirm('WARNING: This will delete all existing seats in this screen and generate a new layout. Are you sure?')) return;
+    
+    setIsGenerating(true);
+    try {
+      await seatsApi.bulkCreate({
+        screenId: parseInt(selectedScreenId, 10),
+        rows: genRows,
+        seatsPerRow: genSeats
+      });
+      await loadSeats(selectedScreenId);
+      // We also should reload screens to get updated total capacity
+      await loadScreens();
+    } catch (err: any) {
+      alert(err.response?.data?.error?.message || 'Failed to generate layout.');
+    } finally {
+      setIsGenerating(false);
     }
   };
 
-  const SeatIcon = ({ status }: { status: SeatStatus }) => {
+  const handleUpdateSeat = async (updates: { isActive?: boolean; seatType?: 'REGULAR' | 'PREMIUM' | 'VIP' | 'WHEELCHAIR' }) => {
+    if (!selectedSeat) return;
+    try {
+      await seatsApi.update(selectedSeat.seatId, updates);
+      await loadSeats(selectedScreenId);
+      await loadScreens();
+      setSelectedSeat(prev => prev ? { ...prev, ...updates } : null);
+    } catch (err) {
+      console.error('Failed to update seat', err);
+      alert('Failed to update seat');
+    }
+  };
+
+  const handleDeleteSeat = async (seatId: number) => {
+    if (!window.confirm('Are you sure you want to delete this seat?')) return;
+    try {
+      await seatsApi.delete(seatId);
+      await loadSeats(selectedScreenId);
+      await loadScreens();
+      if (selectedSeat?.seatId === seatId) {
+        setSelectedSeat(null);
+      }
+    } catch (err: any) {
+      alert(err.response?.data?.error?.message || 'Failed to delete seat. It might be booked.');
+    }
+  };
+
+  // Group seats by rowNo for rendering
+  const rowNumbers = Array.from(new Set(seats.map(s => s.rowNo))).sort((a, b) => a - b);
+  const maxSeatNo = Math.max(...seats.map(s => s.seatNo), 1);
+  
+  const activeSeatsCount = seats.filter(s => s.isActive).length;
+  const inactiveSeatsCount = seats.length - activeSeatsCount;
+  const selectedScreen = screens.find(s => String(s.screenId) === selectedScreenId);
+
+  const getSeatStatus = (seat: SeatData) => {
+    if (!seat.isActive) return 'inactive';
+    if (seat.seatType === 'PREMIUM' || seat.seatType === 'VIP') return 'premium';
+    return 'available';
+  };
+
+  const SeatIcon = ({ status }: { status: 'available' | 'selected' | 'inactive' | 'premium' }) => {
     let strokeColor = '#7cb3d6'; // available (light blue outline)
     let fillColor = '#ffffff';
     let innerFillColor = '#ffffff';
@@ -90,19 +166,18 @@ export default function AdminSeats() {
 
     return (
       <svg width="24" height="32" viewBox="0 0 24 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-        {/* Backrest Outer */}
         <rect x="2" y="2" width="20" height="20" rx="4" fill={fillColor} stroke={strokeColor} strokeWidth="1.5" />
-        {/* Backrest Inner Cushion */}
         <rect x="5" y="5" width="14" height="13" rx="2" fill={innerFillColor} stroke={strokeColor} strokeWidth="1" />
-        {/* Seat Cushion */}
         <rect x="3.5" y="18" width="17" height="11" rx="3" fill={fillColor} stroke={strokeColor} strokeWidth="1.5" />
-        {/* Left Armrest */}
         <rect x="1.5" y="14" width="4.5" height="12" rx="1.5" fill={fillColor} stroke={strokeColor} strokeWidth="1.5" />
-        {/* Right Armrest */}
         <rect x="18" y="14" width="4.5" height="12" rx="1.5" fill={fillColor} stroke={strokeColor} strokeWidth="1.5" />
       </svg>
     );
   };
+
+  const filteredSeatsTable = seats.filter(s => 
+    searchQuery === '' || s.seatCode.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   return (
     <div className="admin-seats-page">
@@ -159,12 +234,25 @@ export default function AdminSeats() {
         <div className="screen-selector-row">
           <div className="screen-selector">
             <label>Select Screen</label>
-            <select>
-              <option>Screen 1 - Main Auditorium</option>
-              <option>Screen 2 - Innovation Hall</option>
-              <option>Screen 3 - Open Air Screen</option>
+            <select value={selectedScreenId} onChange={(e) => setSelectedScreenId(e.target.value)}>
+              {screens.map(sc => (
+                <option key={sc.screenId} value={sc.screenId}>
+                  {sc.screenName}
+                </option>
+              ))}
             </select>
-            <span className="screen-subtitle">University Auditorium - 120 seats</span>
+            <span className="screen-subtitle">
+              {selectedScreen?.screenName} - {seats.length} total seats configured
+            </span>
+          </div>
+          
+          <div className="layout-generator">
+            <input type="number" min="1" max="26" value={genRows} onChange={e => setGenRows(parseInt(e.target.value)||1)} placeholder="Rows" title="Rows" />
+            <span>&times;</span>
+            <input type="number" min="1" max="50" value={genSeats} onChange={e => setGenSeats(parseInt(e.target.value)||1)} placeholder="Seats" title="Seats per row" />
+            <button className="btn-generate" onClick={handleGenerateLayout} disabled={isGenerating}>
+              {isGenerating ? 'Generating...' : 'Generate Grid'}
+            </button>
           </div>
         </div>
 
@@ -173,46 +261,62 @@ export default function AdminSeats() {
           
           {/* Left: Stats */}
           <div className="seats-stats-panel">
-            <h3>Screen 1</h3>
+            <h3>{selectedScreen?.screenName || 'Screen'}</h3>
             <div className="stat-row">
               <span className="label">Total Seats:</span>
-              <span className="value">120</span>
+              <span className="value">{seats.length}</span>
             </div>
             <div className="stat-row">
               <span className="label">Active Seats:</span>
-              <span className="value">116</span>
+              <span className="value">{activeSeatsCount}</span>
             </div>
             <div className="stat-row">
               <span className="label">Inactive Seats:</span>
-              <span className="value">4</span>
+              <span className="value">{inactiveSeatsCount}</span>
             </div>
           </div>
 
           {/* Center: Seat Map */}
           <div className="seats-map-panel">
-            <div className="map-header">Seat Layout - Screen 1</div>
+            <div className="map-header">Seat Layout - {selectedScreen?.screenName}</div>
             
             <div className="map-container">
               <div className="screen-bar">SCREEN</div>
               
-              <div className="seat-grid">
-                {rows.map(row => (
-                  <div key={row} className="seat-row">
-                    <span className="row-label">{row}</span>
-                    <div className="row-seats">
-                      {seats.filter(s => s.row === row).map(seat => (
-                        <div 
-                          key={seat.id} 
-                          className={`seat-item ${seat.status} ${selectedSeat?.id === seat.id ? 'active-selection' : ''}`}
-                          onClick={() => handleSeatClick(seat)}
-                        >
-                          <SeatIcon status={seat.id === selectedSeat?.id ? 'selected' : seat.status} />
+              {seats.length === 0 ? (
+                <div style={{ textAlign: 'center', padding: '40px', color: '#666' }}>
+                  No seats configured for this screen. <br/>Use the generator above to create a layout.
+                </div>
+              ) : (
+                <div className="seat-grid">
+                  {rowNumbers.map(rowNo => {
+                    const rowSeats = seats.filter(s => s.rowNo === rowNo);
+                    const rowLabel = rowSeats.length > 0 ? rowSeats[0].seatCode.replace(/[0-9]/g, '') : '';
+                    return (
+                      <div key={rowNo} className="seat-row">
+                        <span className="row-label">{rowLabel}</span>
+                        <div className="row-seats" style={{ display: 'grid', gridTemplateColumns: `repeat(${maxSeatNo}, minmax(28px, 1fr))`, gap: '8px' }}>
+                          {rowSeats.map(seat => {
+                            const status = getSeatStatus(seat);
+                            const isSelected = selectedSeat?.seatId === seat.seatId;
+                            return (
+                              <div 
+                                key={seat.seatId} 
+                                className={`seat-item ${status} ${isSelected ? 'active-selection' : ''}`}
+                                onClick={() => setSelectedSeat(seat)}
+                                style={{ gridColumnStart: seat.seatNo }}
+                                title={seat.seatCode}
+                              >
+                                <SeatIcon status={isSelected ? 'selected' : status} />
+                              </div>
+                            );
+                          })}
                         </div>
-                      ))}
-                    </div>
-                  </div>
-                ))}
-              </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
 
               <div className="seat-legend">
                 <div className="legend-item">
@@ -225,7 +329,7 @@ export default function AdminSeats() {
                   <SeatIcon status="inactive" /> Inactive
                 </div>
                 <div className="legend-item">
-                  <SeatIcon status="premium" /> Premium
+                  <SeatIcon status="premium" /> Premium/VIP
                 </div>
               </div>
             </div>
@@ -238,37 +342,54 @@ export default function AdminSeats() {
               <div className="details-content">
                 <div className="detail-row">
                   <span className="label">Seat Code</span>
-                  <span className="value fw-600">{selectedSeat.id}</span>
+                  <span className="value fw-600">{selectedSeat.seatCode}</span>
                 </div>
                 <div className="detail-row">
-                  <span className="label">Row</span>
-                  <span className="value">{selectedSeat.row}</span>
+                  <span className="label">Row No.</span>
+                  <span className="value">{selectedSeat.rowNo}</span>
                 </div>
                 <div className="detail-row">
-                  <span className="label">Seat Number</span>
-                  <span className="value">{selectedSeat.number}</span>
+                  <span className="label">Seat No.</span>
+                  <span className="value">{selectedSeat.seatNo}</span>
                 </div>
                 <div className="detail-row">
-                  <span className="label">Seat Type</span>
-                  <span className="value">{selectedSeat.type}</span>
+                  <span className="label">Type</span>
+                  <span className="value">
+                    <select 
+                      value={selectedSeat.seatType} 
+                      onChange={e => handleUpdateSeat({ seatType: e.target.value as any })}
+                      style={{ padding: '4px', borderRadius: '4px', border: '1px solid #ccc' }}
+                    >
+                      <option value="REGULAR">Regular</option>
+                      <option value="PREMIUM">Premium</option>
+                      <option value="VIP">VIP</option>
+                      <option value="WHEELCHAIR">Wheelchair</option>
+                    </select>
+                  </span>
                 </div>
                 <div className="detail-row">
                   <span className="label">Status</span>
-                  <span className={`value status-${selectedSeat.status}`}>{selectedSeat.status === 'inactive' ? 'Inactive' : 'Active'}</span>
-                </div>
-                <div className="detail-row">
-                  <span className="label">Screen</span>
-                  <span className="value">Screen 1</span>
+                  <span className={`value status-${selectedSeat.isActive ? 'active' : 'inactive'}`}>
+                    {selectedSeat.isActive ? 'Active' : 'Inactive'}
+                  </span>
                 </div>
                 
                 <div className="details-actions">
-                  <button className="btn-edit-seat">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
-                    Edit Seat
-                  </button>
-                  <button className="btn-deactivate">
+                  <button 
+                    className="btn-deactivate"
+                    onClick={() => handleUpdateSeat({ isActive: !selectedSeat.isActive })}
+                    style={{ backgroundColor: selectedSeat.isActive ? '#fff3f3' : '#e6f4ea', color: selectedSeat.isActive ? '#d93025' : '#1e8e3e', borderColor: selectedSeat.isActive ? '#fce8e6' : '#ceead6' }}
+                  >
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>
-                    Deactivate
+                    {selectedSeat.isActive ? 'Mark Inactive' : 'Mark Active'}
+                  </button>
+                  <button 
+                    className="btn-deactivate"
+                    onClick={() => handleDeleteSeat(selectedSeat.seatId)}
+                    style={{ backgroundColor: '#fff', color: '#d93025', border: '1px solid #d93025' }}
+                  >
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                    Delete Seat
                   </button>
                 </div>
               </div>
@@ -286,11 +407,13 @@ export default function AdminSeats() {
             <div className="all-seats-actions">
               <div className="table-search">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-                <input type="text" placeholder="Search..." />
+                <input 
+                  type="text" 
+                  placeholder="Search seat code..." 
+                  value={searchQuery}
+                  onChange={e => setSearchQuery(e.target.value)}
+                />
               </div>
-              <button className="btn-filter">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
-              </button>
             </div>
           </div>
           
@@ -298,7 +421,7 @@ export default function AdminSeats() {
             <thead>
               <tr>
                 <th>Seat Code</th>
-                <th>Row</th>
+                <th>Row No.</th>
                 <th>Seat No.</th>
                 <th>Type</th>
                 <th>Status</th>
@@ -306,25 +429,36 @@ export default function AdminSeats() {
               </tr>
             </thead>
             <tbody>
-              {seats.slice(0, 5).map(seat => (
-                <tr key={seat.id}>
-                  <td className="fw-600">{seat.id}</td>
-                  <td>{seat.row}</td>
-                  <td>{seat.number}</td>
-                  <td>{seat.type}</td>
+              {filteredSeatsTable.slice(0, 10).map(seat => (
+                <tr key={seat.seatId} className={selectedSeat?.seatId === seat.seatId ? 'table-row-selected' : ''} onClick={() => setSelectedSeat(seat)} style={{ cursor: 'pointer' }}>
+                  <td className="fw-600">{seat.seatCode}</td>
+                  <td>{seat.rowNo}</td>
+                  <td>{seat.seatNo}</td>
+                  <td>{seat.seatType}</td>
                   <td>
-                    <span className={`status-badge ${seat.status === 'inactive' ? 'inactive' : 'active'}`}>
-                      {seat.status === 'inactive' ? 'Inactive' : 'Active'}
+                    <span className={`status-badge ${!seat.isActive ? 'inactive' : 'active'}`}>
+                      {!seat.isActive ? 'Inactive' : 'Active'}
                     </span>
                   </td>
                   <td className="actions-cell">
-                    <button className="btn-action-icon edit"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg></button>
-                    <button className="btn-action-icon delete"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>
+                    <button className="btn-action-icon delete" onClick={(e) => { e.stopPropagation(); handleDeleteSeat(seat.seatId); }}>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                    </button>
                   </td>
                 </tr>
               ))}
+              {filteredSeatsTable.length === 0 && (
+                <tr>
+                  <td colSpan={6} style={{ textAlign: 'center', padding: '20px', color: '#666' }}>No seats found.</td>
+                </tr>
+              )}
             </tbody>
           </table>
+          {filteredSeatsTable.length > 10 && (
+            <div style={{ padding: '12px 20px', fontSize: '13px', color: '#666' }}>
+              Showing 10 of {filteredSeatsTable.length} seats.
+            </div>
+          )}
         </div>
 
       </div>

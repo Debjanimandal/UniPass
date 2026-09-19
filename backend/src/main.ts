@@ -5,9 +5,11 @@ import { env } from './config/env';
 
 // ─── Routers ──────────────────────────────────────────────────────────────────
 import authRouter from './modules/auth/auth.router';
-import bookingsRouter from './modules/bookings/bookings.router';
 import moviesRouter from './modules/movies/movies.router';
 import screensRouter from './modules/screens/screens.router';
+import screeningsRouter from './modules/screenings/screenings.router';
+import seatsRouter from './modules/seats/seats.router';
+import bookingsRouter from './modules/bookings/bookings.router';
 const app = express();
 
 // ─── Middleware ───────────────────────────────────────────────────────────────
@@ -35,10 +37,14 @@ app.get('/api/health', (_req, res) => {
 
 app.use('/api/auth', authRouter);
 app.use('/api/movies', moviesRouter);
-app.use('/api/bookings', bookingsRouter);
 app.use('/api/screens', screensRouter);
+app.use('/api/screenings', screeningsRouter);
+app.use('/api/seats', seatsRouter);
+app.use('/api/bookings', bookingsRouter);
 
-// ─── 404 Handler ─────────────────────────────────────────────────────────────
+// ─── Error Handling ──────────────────────────────────────────────────────────
+
+// Triggering hot-reload───
 
 app.use((_req, res) => {
   res.status(404).json({

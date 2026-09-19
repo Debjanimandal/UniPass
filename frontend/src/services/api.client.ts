@@ -83,12 +83,67 @@ export const moviesApi = {
 // ─── Screenings API ───────────────────────────────────────────────
 
 export const screeningsApi = {
-  getAll: (params?: { movieId?: number; date?: string }) =>
+  getAll: (params?: { active?: boolean; movieId?: number; screenId?: number; date?: string }) =>
     api.get('/screenings', { params }),
 
   getById: (id: number) => api.get(`/screenings/${id}`),
 
   getSeats: (id: number) => api.get(`/screenings/${id}/seats`),
+
+  create: (data: {
+    movieId: number;
+    screenId: number;
+    date: string;
+    startTime: string;
+    endTime: string;
+    price: number;
+    isActive: boolean;
+  }) => api.post('/screenings', data),
+
+  createBulk: (data: {
+    movieId: number;
+    screenId: number;
+    startDate: string;
+    endDate: string;
+    timings: { startTime: string; endTime: string }[];
+    price: number;
+    isActive: boolean;
+  }) => api.post('/screenings/bulk', data),
+
+  update: (
+    id: number,
+    data: Partial<{
+      movieId: number;
+      screenId: number;
+      date: string;
+      startTime: string;
+      endTime: string;
+      price: number;
+      isActive: boolean;
+    }>
+  ) => api.patch(`/screenings/${id}`, data),
+
+  delete: (id: number) => api.delete(`/screenings/${id}`),
+};
+
+// ─── Seats API ────────────────────────────────────────────────────
+
+export const seatsApi = {
+  getByScreen: (screenId: string) =>
+    api.get('/seats', { params: { screenId } }),
+
+  bulkCreate: (data: { screenId: number; rows: number; seatsPerRow: number }) =>
+    api.post('/seats/bulk', data),
+
+  update: (
+    id: number,
+    data: Partial<{
+      seatType: 'REGULAR' | 'PREMIUM' | 'VIP' | 'WHEELCHAIR';
+      isActive: boolean;
+    }>
+  ) => api.patch(`/seats/${id}`, data),
+
+  delete: (id: number) => api.delete(`/seats/${id}`),
 };
 
 // ─── Bookings API ─────────────────────────────────────────────────
