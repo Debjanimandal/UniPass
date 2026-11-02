@@ -460,3 +460,103 @@
   align-items: flex-start;
   line-height: 1.5;
 }
+
+/* ─── Real Bookings list ─────────────────────────────────────────── */
+.bk-browse-btn {
+  background: #1e3a8a;
+  color: #fff;
+  text-decoration: none;
+  padding: 10px 18px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+}
+.bk-browse-btn:hover { background: #1e40af; }
+
+.bk-content { max-width: 960px; margin: 0 auto; padding: 0 40px 48px; }
+
+.bk-empty {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 48px;
+  text-align: center;
+  color: #64748b;
+}
+.bk-empty.error { color: #dc2626; }
+.bk-empty a { color: #2563eb; }
+
+.bk-list { display: flex; flex-direction: column; gap: 16px; }
+
+.bk-card {
+  display: flex;
+  gap: 18px;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 18px;
+  align-items: stretch;
+}
+.bk-card.cancelled { opacity: .7; }
+
+.bk-poster {
+  width: 80px;
+  height: 116px;
+  object-fit: cover;
+  border-radius: 8px;
+  background: #e2e8f0;
+  flex-shrink: 0;
+}
+
+.bk-info { flex: 1; min-width: 0; }
+.bk-title-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+.bk-title-row h3 { margin: 0; font-size: 17px; color: #0f172a; }
+.bk-detail { display: flex; gap: 8px; font-size: 13px; padding: 2px 0; }
+.bk-detail span { color: #64748b; min-width: 52px; }
+.bk-detail strong { color: #0f172a; font-weight: 600; }
+
+.bk-badge {
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+.bk-badge.valid { background: #dcfce7; color: #16a34a; }
+.bk-badge.scanned { background: #dbeafe; color: #1e40af; }
+.bk-badge.cancelled { background: #f1f5f9; color: #64748b; }
+
+.bk-actions {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.bk-view-ticket {
+  background: #eff6ff;
+  color: #1e3a8a;
+  text-decoration: none;
+  text-align: center;
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+}
+.bk-view-ticket:hover { background: #dbeafe; }
+.bk-cancel {
+  background: #fff1f2;
+  color: #e11d48;
+  border: 1px solid #fecdd3;
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.bk-cancel:hover { background: #ffe4e6; }
+
+@media (max-width: 680px) {
+  .bk-card { flex-direction: column; align-items: center; text-align: center; }
+  .bk-actions { flex-direction: row; }
+}

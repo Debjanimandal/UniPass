@@ -1,7 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuthStore } from '../store/auth.store';
-import axios from 'axios';
+import { moviesApi } from '../services/api.client';
+import { useDataChange } from '../hooks/dataEvents';
+import { useAutoRefresh } from '../hooks/useAutoRefresh';
 import './Events.css';
 
 export default function Events() {
@@ -28,22 +30,18 @@ export default function Events() {
   const fetchEvents = async () => {
     try {
       setLoading(true);
-      const params = new URLSearchParams({ active: 'true' });
-      if (search) params.append('search', search);
-      if (category) params.append('category', category);
-      if (language) params.append('language', language);
+      const params: { active: boolean; search?: string; category?: string; language?: string; date?: string } = { active: true };
+      if (search) params.search = search;
+      if (category) params.category = category;
+      if (language) params.language = language;
       if (selectedDate) {
-        // Format to YYYY-MM-DD
         const offset = selectedDate.getTimezoneOffset();
-        const targetDate = new Date(selectedDate.getTime() - (offset*60*1000));
-        const dateStr = targetDate.toISOString().split('T')[0];
-        params.append('date', dateStr);
+        const targetDate = new Date(selectedDate.getTime() - (offset * 60 * 1000));
+        params.date = targetDate.toISOString().split('T')[0];
       }
 
-      const res = await axios.get(`http://localhost:3001/api/movies?${params.toString()}`);
-      if (res.data.success) {
-        setMovies(res.data.data);
-      }
+      const res = await moviesApi.getAll(params);
+      setMovies(res.data?.data ?? []);
     } catch (error) {
       console.error('Error fetching events:', error);
     } finally {
@@ -54,6 +52,10 @@ export default function Events() {
   useEffect(() => {
     fetchEvents();
   }, [category, language, selectedDate]);
+
+  // Reflect admin movie/screening changes on refocus and via the event bus.
+  useDataChange(['movies', 'screenings'], fetchEvents);
+  useAutoRefresh(fetchEvents);
 
   // Handle search dynamically
   useEffect(() => {

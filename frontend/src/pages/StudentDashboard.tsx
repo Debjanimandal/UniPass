@@ -1,7 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import { useCallback, useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import axios from 'axios';
 import { useAuthStore } from '../store/auth.store';
+import { moviesApi } from '../services/api.client';
+import { useDataChange } from '../hooks/dataEvents';
+import { useAutoRefresh } from '../hooks/useAutoRefresh';
 import './StudentDashboard.css';
 
 export default function StudentDashboard() {
@@ -19,22 +21,23 @@ export default function StudentDashboard() {
   const [movies, setMovies] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchMovies = async () => {
-      try {
-        const res = await axios.get('http://localhost:3001/api/movies?active=true');
-        if (res.data.success) {
-          // just take the first 3 movies as "Upcoming Events"
-          setMovies(res.data.data.slice(0, 3));
-        }
-      } catch (error) {
-        console.error('Error fetching movies:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchMovies();
+  const fetchMovies = useCallback(async () => {
+    try {
+      const res = await moviesApi.getAll({ active: true });
+      // just take the first 3 movies as "Upcoming Events"
+      setMovies((res.data?.data ?? []).slice(0, 3));
+    } catch (error) {
+      console.error('Error fetching movies:', error);
+    } finally {
+      setLoading(false);
+    }
   }, []);
+
+  useEffect(() => { fetchMovies(); }, [fetchMovies]);
+
+  // Keep the student dashboard in sync with admin movie changes.
+  useDataChange(['movies'], fetchMovies);
+  useAutoRefresh(fetchMovies);
 
   return (
     <div className="student-dashboard-page">

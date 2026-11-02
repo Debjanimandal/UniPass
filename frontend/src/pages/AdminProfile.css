@@ -373,8 +373,77 @@
   transition: background-color 0.2s;
 }
 
-.btn-save-changes:hover {
+.btn-save-changes:hover:not(:disabled) {
   background: #1e40af;
+}
+
+.btn-save-changes:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Editable input (when the profile is in edit mode) */
+.form-group input:not([readonly]) {
+  background-color: #ffffff;
+  border-color: #cbd5e1;
+}
+
+.form-group input:not([readonly]):focus {
+  border-color: #1e3a8a;
+  box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.12);
+}
+
+/* Edit action row (Save + Cancel together) */
+.profile-edit-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.profile-edit-actions .btn-save-changes {
+  flex: 1;
+}
+
+.btn-cancel-changes {
+  flex: 0 0 auto;
+  background: #ffffff;
+  color: #475569;
+  border: 1px solid #cbd5e1;
+  padding: 12px 18px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.btn-cancel-changes:hover:not(:disabled) {
+  background: #f1f5f9;
+}
+
+.btn-cancel-changes:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Inline save feedback */
+.profile-save-message {
+  margin-bottom: 14px;
+  padding: 10px 12px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.profile-save-message.success {
+  background-color: #dcfce7;
+  color: #15803d;
+  border: 1px solid #bbf7d0;
+}
+
+.profile-save-message.error {
+  background-color: #fee2e2;
+  color: #b91c1c;
+  border: 1px solid #fecaca;
 }
 
 /* Activity List */

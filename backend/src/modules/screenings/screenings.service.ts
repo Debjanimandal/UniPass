@@ -74,7 +74,8 @@ export async function getAllScreenings(filters?: {
         }
       },
       _count: {
-        select: { tickets: true }
+        // Only count live bookings — cancelled tickets free the seat.
+        select: { tickets: { where: { status: { not: 'CANCELLED' } } } }
       }
     },
   });
@@ -93,7 +94,8 @@ export async function getScreeningById(screeningId: number) {
         }
       },
       _count: {
-        select: { tickets: true }
+        // Only count live bookings — cancelled tickets free the seat.
+        select: { tickets: { where: { status: { not: 'CANCELLED' } } } }
       }
     },
   });

@@ -23,7 +23,9 @@ export default function Login() {
   const [serverError, setServerError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
 
-  const from = (location.state as { from?: { pathname: string } })?.from?.pathname;
+  const locState = location.state as { from?: { pathname: string }; reason?: string } | null;
+  const from = locState?.from?.pathname;
+  const sessionExpired = locState?.reason === 'session-expired';
 
   const {
     register,
@@ -112,6 +114,12 @@ export default function Login() {
               <h2 className="auth-title">Welcome back</h2>
               <p className="auth-subtitle">Sign in to continue to your UniPass account.</p>
             </div>
+
+            {sessionExpired && !serverError && (
+              <div className="alert alert-error" style={{ marginBottom: 20 }}>
+                <span>Your session has expired. Please sign in again.</span>
+              </div>
+            )}
 
             {serverError && (
               <div className="alert alert-error" style={{ marginBottom: 20 }}>

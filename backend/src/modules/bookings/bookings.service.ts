@@ -268,6 +268,8 @@ export async function getMyTickets(userId: number) {
         status: t.status,
         bookedAt: t.bookedAt,
         scannedAt: t.scannedAt,
+        screeningId: t.screeningId,
+        movieId: t.screening.movieId,
         seatCode: t.seat.seatCode,
         seatType: t.seat.seatType,
         movieTitle: t.screening.movie.title,
@@ -303,6 +305,59 @@ export async function cancelTicket(userId: number, ticketId: number) {
     data: { status: 'CANCELLED' },
     select: { ticketId: true, status: true },
   });
+}
+
+// ─── Service: List ALL bookings (Admin) ───────────────────────────────────────
+
+/**
+ * Returns every ticket across all students with movie/screen/seat/scanner info,
+ * plus aggregate stats, for the admin bookings page. All real DB data.
+ */
+export async function getAllBookings() {
+  const tickets = await prisma.ticket.findMany({
+    orderBy: { bookedAt: 'desc' },
+    include: {
+      user: { select: { userId: true, firstName: true, lastName: true, email: true } },
+      seat: { select: { seatCode: true, seatType: true } },
+      screening: {
+        include: {
+          movie: { select: { movieId: true, title: true } },
+          screen: { select: { screenId: true, screenName: true, venue: true } },
+        },
+      },
+      scanner: { select: { firstName: true, lastName: true } },
+    },
+  });
+
+  const bookings = tickets.map((t) => ({
+    ticketId: t.ticketId,
+    studentName: `${t.user.firstName} ${t.user.lastName}`,
+    studentEmail: t.user.email,
+    movieId: t.screening.movie.movieId,
+    movieTitle: t.screening.movie.title,
+    screeningId: t.screeningId,
+    screenId: t.screening.screen.screenId,
+    screenName: t.screening.screen.screenName,
+    venue: t.screening.screen.venue,
+    date: t.screening.date,
+    startTime: t.screening.startTime,
+    endTime: t.screening.endTime,
+    seatCode: t.seat.seatCode,
+    seatType: t.seat.seatType,
+    status: t.status,
+    bookedAt: t.bookedAt,
+    scannedAt: t.scannedAt,
+    scannedBy: t.scanner ? `${t.scanner.firstName} ${t.scanner.lastName}` : null,
+  }));
+
+  const stats = {
+    total: bookings.length,
+    valid: bookings.filter((b) => b.status === 'VALID').length,
+    scanned: bookings.filter((b) => b.status === 'SCANNED').length,
+    cancelled: bookings.filter((b) => b.status === 'CANCELLED').length,
+  };
+
+  return { bookings, stats };
 }
 
 // ─── Service: Verify QR (Guard endpoint) ──────────────────────────────────────

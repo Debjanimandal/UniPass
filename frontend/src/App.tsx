@@ -12,6 +12,11 @@ import Bookings from './pages/Bookings';
 import Events from './pages/Events';
 import Films from './pages/Films';
 import Profile from './pages/Profile';
+import MovieDetails from './pages/MovieDetails';
+import SeatSelection from './pages/SeatSelection';
+import BookingConfirmation from './pages/BookingConfirmation';
+import MyTickets from './pages/MyTickets';
+import GuardScanner from './pages/GuardScanner';
 import AdminDashboard from './pages/AdminDashboard';
 import AdminMovies from './pages/AdminMovies';
 import AdminScreens from './pages/AdminScreens';
@@ -46,20 +51,19 @@ export default function App() {
           <Route element={<ProtectedRoute allowedRoles={['STUDENT']} />}>
             <Route path="/student/dashboard" element={<StudentDashboard />} />
             <Route path="/student/films" element={<Films />} />
+            <Route path="/student/films/:id" element={<MovieDetails />} />
             <Route path="/student/events" element={<Events />} />
-            <Route path="/student/movies/:id" element={<ComingSoon title="Movie Details" />} />
-            <Route path="/student/screenings/:id" element={<ComingSoon title="Screening Details" />} />
-            <Route path="/student/screenings/:id/book" element={<ComingSoon title="Select Your Seat" />} />
-            <Route path="/student/booking-confirmation" element={<ComingSoon title="Booking Confirmed!" />} />
+            <Route path="/student/movies/:id" element={<MovieDetails />} />
+            <Route path="/student/screenings/:id/book" element={<SeatSelection />} />
+            <Route path="/student/booking-confirmation" element={<BookingConfirmation />} />
             <Route path="/student/bookings" element={<Bookings />} />
-            <Route path="/student/tickets" element={<ComingSoon title="My Tickets" />} />
-            <Route path="/student/tickets/:id" element={<ComingSoon title="Digital Ticket" />} />
+            <Route path="/student/tickets" element={<MyTickets />} />
             <Route path="/student/profile" element={<Profile />} />
           </Route>
 
           {/* ─── Guard Routes ────────────────────────────────────── */}
           <Route element={<ProtectedRoute allowedRoles={['GUARD']} />}>
-            <Route path="/guard/scan" element={<ComingSoon title="QR Scanner" description="Scan student QR tickets for venue entry." />} />
+            <Route path="/guard/scan" element={<GuardScanner />} />
             <Route path="/guard/history" element={<ComingSoon title="Scan History" />} />
           </Route>
 

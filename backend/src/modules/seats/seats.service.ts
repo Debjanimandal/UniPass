@@ -1,7 +1,6 @@
-import { PrismaClient, SeatType } from '@prisma/client';
+import { SeatType } from '@prisma/client';
 import { z } from 'zod';
-
-const prisma = new PrismaClient();
+import { prisma } from '../../config/prisma';
 
 export const BulkCreateSeatsSchema = z.object({
   screenId: z.number().int().positive(),

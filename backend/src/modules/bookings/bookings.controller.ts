@@ -6,6 +6,7 @@ import {
   getMyTickets,
   cancelTicket,
   verifyAndScanTicket,
+  getAllBookings,
   BookTicketSchema,
 } from './bookings.service';
 import { Errors, sendError } from '../../utils/response';
@@ -97,6 +98,18 @@ export async function cancelBooking(req: Request, res: Response) {
   try {
     const result = await cancelTicket(req.user.sub, ticketId);
     res.json({ success: true, data: result });
+  } catch (err) {
+    handleServiceError(res, err);
+  }
+}
+
+// ─── GET /api/bookings/all ────────────────────────────────────────────────────
+// Admin endpoint: list every booking across all students + stats.
+
+export async function allBookings(_req: Request, res: Response) {
+  try {
+    const data = await getAllBookings();
+    res.json({ success: true, data });
   } catch (err) {
     handleServiceError(res, err);
   }

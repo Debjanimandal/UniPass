@@ -16,7 +16,7 @@ interface SeatData {
   rowNo: number;
   seatNo: number;
   seatCode: string;
-  seatType: 'REGULAR' | 'PREMIUM' | 'VIP' | 'WHEELCHAIR';
+  seatType: 'REGULAR' | 'PREMIUM' | 'VIP';
   isActive: boolean;
 }
 
@@ -29,8 +29,16 @@ export default function AdminSeats() {
   
   const [seats, setSeats] = useState<SeatData[]>([]);
   const [selectedSeat, setSelectedSeat] = useState<SeatData | null>(null);
-  
+
+  // Pending seat type — holds the dropdown selection until the user clicks Save
+  const [pendingSeatType, setPendingSeatType] = useState<SeatData['seatType']>('REGULAR');
+  const [isSavingType, setIsSavingType] = useState(false);
+
   const [searchQuery, setSearchQuery] = useState('');
+
+  // How many seats to show in the table before "Show More"
+  const SEATS_PREVIEW_COUNT = 10;
+  const [showAllSeats, setShowAllSeats] = useState(false);
 
   // Bulk generator state
   const [genRows, setGenRows] = useState(10);
@@ -48,28 +56,45 @@ export default function AdminSeats() {
       setSeats([]);
       setSelectedSeat(null);
     }
+    setShowAllSeats(false); // collapse the table back to preview on screen change
   }, [selectedScreenId]);
+
+  // Keep the pending type dropdown in sync with whichever seat is selected
+  useEffect(() => {
+    setPendingSeatType(selectedSeat ? selectedSeat.seatType : 'REGULAR');
+  }, [selectedSeat]);
 
   const loadScreens = async () => {
     try {
       const res = await screensApi.getAll();
       if (res.data?.data) {
         setScreens(res.data.data);
-        if (res.data.data.length > 0) {
-          setSelectedScreenId(String(res.data.data[0].screenId));
-        }
+        setSelectedScreenId(prev => prev || (res.data.data.length > 0 ? String(res.data.data[0].screenId) : ''));
       }
     } catch (err) {
       console.error('Failed to load screens', err);
     }
   };
 
-  const loadSeats = async (screenId: string) => {
+  const loadSeats = async (screenId: string, keepSelectedId?: number) => {
     try {
       const res = await seatsApi.getByScreen(screenId);
       if (res.data?.data) {
-        setSeats(res.data.data);
-        setSelectedSeat(null);
+        const freshSeats: SeatData[] = res.data.data;
+        setSeats(freshSeats);
+        // Re-sync the selected seat with its fresh DB values (or clear it)
+        setSelectedSeat(
+          keepSelectedId != null
+            ? freshSeats.find(s => s.seatId === keepSelectedId) ?? null
+            : null
+        );
+        // Sync the generator inputs to the screen's actual layout
+        if (freshSeats.length > 0) {
+          const rowCount = new Set(freshSeats.map(s => s.rowNo)).size;
+          const colCount = Math.max(...freshSeats.map(s => s.seatNo));
+          setGenRows(rowCount);
+          setGenSeats(colCount);
+        }
       }
     } catch (err) {
       console.error('Failed to load seats', err);
@@ -104,16 +129,58 @@ export default function AdminSeats() {
     }
   };
 
-  const handleUpdateSeat = async (updates: { isActive?: boolean; seatType?: 'REGULAR' | 'PREMIUM' | 'VIP' | 'WHEELCHAIR' }) => {
+  const handleUpdateSeat = async (updates: { isActive?: boolean; seatType?: 'REGULAR' | 'PREMIUM' | 'VIP' }) => {
     if (!selectedSeat) return;
+    const seatId = selectedSeat.seatId;
+
+    // 1. Persist the change — surface the real backend error if this step fails
     try {
-      await seatsApi.update(selectedSeat.seatId, updates);
-      await loadSeats(selectedScreenId);
-      await loadScreens();
-      setSelectedSeat(prev => prev ? { ...prev, ...updates } : null);
-    } catch (err) {
+      await seatsApi.update(seatId, updates);
+    } catch (err: any) {
+      const status = err?.response?.status;
+      const message = err?.response?.data?.error?.message;
       console.error('Failed to update seat', err);
-      alert('Failed to update seat');
+
+      if (status === 403) {
+        // Token's role is stale (account promoted after the token was issued),
+        // or this account is not an admin. A fresh login fixes the former.
+        if (window.confirm(
+          'Your session does not have permission to edit seats. ' +
+          'This usually happens when your account role changed after you logged in.\n\n' +
+          'Log out and sign back in to refresh your session?'
+        )) {
+          logout();
+          navigate('/login');
+        }
+        return;
+      }
+
+      if (status === 401) {
+        alert('Your session has expired. Please log in again.');
+        return;
+      }
+
+      alert(message || 'Failed to update seat. Please try again.');
+      return;
+    }
+
+    // 2. Reload from the DB so the change is reflected. A failure here does NOT
+    //    mean the save failed, so report it separately.
+    try {
+      await loadSeats(selectedScreenId, seatId);
+      await loadScreens();
+    } catch (err) {
+      console.error('Seat saved, but failed to refresh the list', err);
+    }
+  };
+
+  const handleSaveSeatType = async () => {
+    if (!selectedSeat || pendingSeatType === selectedSeat.seatType) return;
+    setIsSavingType(true);
+    try {
+      await handleUpdateSeat({ seatType: pendingSeatType });
+    } finally {
+      setIsSavingType(false);
     }
   };
 
@@ -139,13 +206,16 @@ export default function AdminSeats() {
   const inactiveSeatsCount = seats.length - activeSeatsCount;
   const selectedScreen = screens.find(s => String(s.screenId) === selectedScreenId);
 
-  const getSeatStatus = (seat: SeatData) => {
+  type SeatVisualStatus = 'available' | 'selected' | 'inactive' | 'premium' | 'vip';
+
+  const getSeatStatus = (seat: SeatData): SeatVisualStatus => {
     if (!seat.isActive) return 'inactive';
-    if (seat.seatType === 'PREMIUM' || seat.seatType === 'VIP') return 'premium';
+    if (seat.seatType === 'VIP') return 'vip';
+    if (seat.seatType === 'PREMIUM') return 'premium';
     return 'available';
   };
 
-  const SeatIcon = ({ status }: { status: 'available' | 'selected' | 'inactive' | 'premium' }) => {
+  const SeatIcon = ({ status }: { status: SeatVisualStatus }) => {
     let strokeColor = '#7cb3d6'; // available (light blue outline)
     let fillColor = '#ffffff';
     let innerFillColor = '#ffffff';
@@ -161,7 +231,11 @@ export default function AdminSeats() {
     } else if (status === 'premium') {
       strokeColor = '#cca97c'; // gold/brown
       fillColor = '#fdf8f0';
-      innerFillColor = '#fdf8f0';
+      innerFillColor = '#f3e4c8';
+    } else if (status === 'vip') {
+      strokeColor = '#9333ea'; // purple for VIP
+      fillColor = '#f6edfd';
+      innerFillColor = '#e4ccf8';
     }
 
     return (
@@ -305,7 +379,7 @@ export default function AdminSeats() {
                                 className={`seat-item ${status} ${isSelected ? 'active-selection' : ''}`}
                                 onClick={() => setSelectedSeat(seat)}
                                 style={{ gridColumnStart: seat.seatNo }}
-                                title={seat.seatCode}
+                                title={`${seat.seatCode} — ${seat.seatType}${seat.isActive ? '' : ' (Inactive)'}`}
                               >
                                 <SeatIcon status={isSelected ? 'selected' : status} />
                               </div>
@@ -320,16 +394,19 @@ export default function AdminSeats() {
 
               <div className="seat-legend">
                 <div className="legend-item">
-                  <SeatIcon status="available" /> Available
+                  <SeatIcon status="available" /> Regular
+                </div>
+                <div className="legend-item">
+                  <SeatIcon status="premium" /> Premium
+                </div>
+                <div className="legend-item">
+                  <SeatIcon status="vip" /> VIP
                 </div>
                 <div className="legend-item">
                   <SeatIcon status="selected" /> Selected
                 </div>
                 <div className="legend-item">
                   <SeatIcon status="inactive" /> Inactive
-                </div>
-                <div className="legend-item">
-                  <SeatIcon status="premium" /> Premium/VIP
                 </div>
               </div>
             </div>
@@ -356,17 +433,29 @@ export default function AdminSeats() {
                   <span className="label">Type</span>
                   <span className="value">
                     <select 
-                      value={selectedSeat.seatType} 
-                      onChange={e => handleUpdateSeat({ seatType: e.target.value as any })}
+                      value={pendingSeatType} 
+                      onChange={e => setPendingSeatType(e.target.value as SeatData['seatType'])}
                       style={{ padding: '4px', borderRadius: '4px', border: '1px solid #ccc' }}
                     >
                       <option value="REGULAR">Regular</option>
                       <option value="PREMIUM">Premium</option>
                       <option value="VIP">VIP</option>
-                      <option value="WHEELCHAIR">Wheelchair</option>
                     </select>
                   </span>
                 </div>
+
+                {pendingSeatType !== selectedSeat.seatType && (
+                  <div className="detail-row type-save-row">
+                    <button
+                      className="btn-save-type"
+                      onClick={handleSaveSeatType}
+                      disabled={isSavingType}
+                    >
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+                      {isSavingType ? 'Saving...' : 'Save Type'}
+                    </button>
+                  </div>
+                )}
                 <div className="detail-row">
                   <span className="label">Status</span>
                   <span className={`value status-${selectedSeat.isActive ? 'active' : 'inactive'}`}>
@@ -429,12 +518,16 @@ export default function AdminSeats() {
               </tr>
             </thead>
             <tbody>
-              {filteredSeatsTable.slice(0, 10).map(seat => (
+              {(showAllSeats ? filteredSeatsTable : filteredSeatsTable.slice(0, SEATS_PREVIEW_COUNT)).map(seat => (
                 <tr key={seat.seatId} className={selectedSeat?.seatId === seat.seatId ? 'table-row-selected' : ''} onClick={() => setSelectedSeat(seat)} style={{ cursor: 'pointer' }}>
                   <td className="fw-600">{seat.seatCode}</td>
                   <td>{seat.rowNo}</td>
                   <td>{seat.seatNo}</td>
-                  <td>{seat.seatType}</td>
+                  <td>
+                    <span className={`type-badge type-${seat.seatType.toLowerCase()}`}>
+                      {seat.seatType}
+                    </span>
+                  </td>
                   <td>
                     <span className={`status-badge ${!seat.isActive ? 'inactive' : 'active'}`}>
                       {!seat.isActive ? 'Inactive' : 'Active'}
@@ -454,9 +547,32 @@ export default function AdminSeats() {
               )}
             </tbody>
           </table>
-          {filteredSeatsTable.length > 10 && (
-            <div style={{ padding: '12px 20px', fontSize: '13px', color: '#666' }}>
-              Showing 10 of {filteredSeatsTable.length} seats.
+          {filteredSeatsTable.length > SEATS_PREVIEW_COUNT && (
+            <div className="seats-table-footer">
+              <span className="seats-count-text">
+                Showing {showAllSeats ? filteredSeatsTable.length : SEATS_PREVIEW_COUNT} of {filteredSeatsTable.length} seats.
+              </span>
+              <button
+                type="button"
+                className="btn-show-more"
+                onClick={() => setShowAllSeats(prev => !prev)}
+              >
+                {showAllSeats ? 'Show Less' : `Show More (${filteredSeatsTable.length - SEATS_PREVIEW_COUNT} more)`}
+                <svg
+                  width="14" height="14" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" strokeWidth="2"
+                  style={{ transform: showAllSeats ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}
+                >
+                  <polyline points="6 9 12 15 18 9"></polyline>
+                </svg>
+              </button>
+            </div>
+          )}
+          {filteredSeatsTable.length > 0 && filteredSeatsTable.length <= SEATS_PREVIEW_COUNT && (
+            <div className="seats-table-footer">
+              <span className="seats-count-text">
+                Showing all {filteredSeatsTable.length} seat{filteredSeatsTable.length === 1 ? '' : 's'}.
+              </span>
             </div>
           )}
         </div>

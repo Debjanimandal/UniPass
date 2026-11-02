@@ -1,7 +1,9 @@
-﻿import { useEffect, useState } from 'react';
+﻿import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuthStore } from '../store/auth.store';
 import { moviesApi } from '../services/api.client';
+import { useDataChange } from '../hooks/dataEvents';
+import { useAutoRefresh } from '../hooks/useAutoRefresh';
 import './Films.css';
 
 interface Movie {
@@ -24,12 +26,18 @@ export default function Films() {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
 
-  useEffect(() => {
-    moviesApi.getAll({ active: true })
+  const loadMovies = useCallback(() => {
+    return moviesApi.getAll({ active: true })
       .then(res => setMovies(res.data?.data ?? []))
       .catch(() => console.error('Failed to load movies'))
       .finally(() => setLoading(false));
   }, []);
+
+  useEffect(() => { loadMovies(); }, [loadMovies]);
+
+  // Reflect admin movie edits as soon as the student returns/refocuses.
+  useDataChange(['movies'], loadMovies);
+  useAutoRefresh(loadMovies);
 
   const filtered = movies.filter(m =>
     m.title.toLowerCase().includes(searchQuery.toLowerCase()) ||

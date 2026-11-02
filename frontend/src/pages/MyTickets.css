@@ -1,0 +1,144 @@
+.my-tickets-page {
+  min-height: 100vh;
+  background: #f0f4f8;
+  font-family: var(--font-body);
+}
+
+.mt-top-nav {
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 40px;
+  background: #fff;
+}
+.mt-logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+.mt-logo img { height: 32px; }
+.mt-logo span { font-size: 20px; font-weight: 800; color: #0d1f5c; }
+.mt-user { font-size: 14px; font-weight: 600; color: #1a202c; }
+
+.mt-blue-nav {
+  background: #1e3a8a;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0 40px;
+}
+.mt-blue-nav a {
+  padding: 0 16px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  color: rgba(255,255,255,.8);
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+  border-bottom: 3px solid transparent;
+}
+.mt-blue-nav a:hover { color: #fff; }
+.mt-blue-nav a.active { color: #fff; border-bottom-color: #fff; font-weight: 600; }
+
+.mt-content { max-width: 1000px; margin: 24px auto; padding: 0 40px; }
+.mt-header h1 { font-size: 24px; color: #0f172a; margin: 0 0 4px; }
+.mt-header p { color: #475569; font-size: 14px; margin: 0 0 20px; }
+
+.mt-empty {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 48px;
+  text-align: center;
+  color: #64748b;
+}
+.mt-empty.error { color: #dc2626; }
+.mt-empty a { color: #2563eb; }
+
+.mt-grid { display: flex; flex-direction: column; gap: 16px; }
+
+.mt-card {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 18px;
+}
+.mt-card.cancelled { opacity: .7; }
+
+.mt-card-left { display: flex; gap: 16px; }
+.mt-poster {
+  width: 90px;
+  height: 130px;
+  object-fit: cover;
+  border-radius: 8px;
+  background: #e2e8f0;
+  flex-shrink: 0;
+}
+.mt-info { display: flex; flex-direction: column; }
+.mt-title-row { display: flex; align-items: center; gap: 10px; margin-bottom: 4px; }
+.mt-title-row h3 { margin: 0; font-size: 17px; color: #0f172a; }
+.mt-meta { font-size: 12px; color: #64748b; margin-bottom: 10px; text-transform: capitalize; }
+.mt-detail { display: flex; gap: 8px; font-size: 13px; padding: 2px 0; }
+.mt-detail span { color: #64748b; min-width: 54px; }
+.mt-detail strong { color: #0f172a; font-weight: 600; }
+
+.mt-badge {
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+.mt-badge.valid { background: #dcfce7; color: #16a34a; }
+.mt-badge.scanned { background: #dbeafe; color: #1e40af; }
+.mt-badge.cancelled { background: #f1f5f9; color: #64748b; }
+
+.mt-cancel {
+  margin-top: 12px;
+  align-self: flex-start;
+  background: #fff1f2;
+  color: #e11d48;
+  border: 1px solid #fecdd3;
+  padding: 7px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.mt-cancel:hover { background: #ffe4e6; }
+
+.mt-qr {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+.mt-qr img {
+  width: 128px;
+  height: 128px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background: #fff;
+}
+.mt-qr-note { font-size: 11px; color: #94a3b8; }
+.mt-qr-void {
+  width: 128px;
+  height: 128px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px dashed #cbd5e1;
+  border-radius: 8px;
+  color: #94a3b8;
+  font-weight: 600;
+  font-size: 13px;
+}
+
+@media (max-width: 680px) {
+  .mt-card { flex-direction: column; align-items: center; }
+  .mt-card-left { flex-direction: column; align-items: center; text-align: center; }
+}

@@ -472,6 +472,18 @@
   border-radius: 50%;
 }
 
+.status-indicator .dot.red {
+  width: 8px;
+  height: 8px;
+  background-color: #ef4444;
+  border-radius: 50%;
+}
+
+.status-text-inactive {
+  color: #dc2626;
+  font-weight: 600;
+}
+
 .btn-view-outline {
   background: white;
   color: #2563eb;

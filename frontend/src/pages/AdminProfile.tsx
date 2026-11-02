@@ -1,19 +1,87 @@
+import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../store/auth.store';
+import { authApi } from '../services/api.client';
 import './AdminProfile.css';
 
 export default function AdminProfile() {
-  const { user, logout } = useAuthStore();
+  const { user, logout, updateUser } = useAuthStore();
   const navigate = useNavigate();
+
+  const [isEditing, setIsEditing] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveMessage, setSaveMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [form, setForm] = useState({
+    firstName: user?.firstName ?? '',
+    lastName: user?.lastName ?? '',
+    phone: user?.phone ?? '',
+  });
+
+  // Keep the form in sync when the user record changes (e.g. after /me refetch)
+  useEffect(() => {
+    if (user && !isEditing) {
+      setForm({
+        firstName: user.firstName ?? '',
+        lastName: user.lastName ?? '',
+        phone: user.phone ?? '',
+      });
+    }
+  }, [user, isEditing]);
 
   const handleLogoutHome = () => {
     logout();
     navigate('/');
   };
 
+  const handleEditToggle = () => {
+    setSaveMessage(null);
+    if (isEditing) {
+      // Cancel — revert any unsaved edits
+      setForm({
+        firstName: user?.firstName ?? '',
+        lastName: user?.lastName ?? '',
+        phone: user?.phone ?? '',
+      });
+    }
+    setIsEditing((prev) => !prev);
+  };
+
+  const handleSave = async () => {
+    if (!user) return;
+    setIsSaving(true);
+    setSaveMessage(null);
+    try {
+      const res = await authApi.updateProfile({
+        firstName: form.firstName.trim(),
+        lastName: form.lastName.trim(),
+        phone: form.phone.trim(),
+      });
+      const updated = res.data?.data;
+      if (updated) {
+        updateUser({
+          firstName: updated.firstName,
+          lastName: updated.lastName,
+          phone: updated.phone,
+        });
+      }
+      setIsEditing(false);
+      setSaveMessage({ type: 'success', text: 'Profile updated successfully.' });
+    } catch (err: any) {
+      const msg =
+        err.response?.data?.error?.message || 'Failed to update profile. Please try again.';
+      setSaveMessage({ type: 'error', text: msg });
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   const fullName = user ? `${user.firstName} ${user.lastName}` : 'Admin Name';
   const email = user?.email || 'admin@unipass.com';
   const initials = user ? `${user.firstName[0]}${user.lastName[0]}`.toUpperCase() : 'A';
+
+  const memberSince = user?.createdAt
+    ? new Date(user.createdAt).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
+    : '—';
 
   return (
     <div className="admin-profile-page">
@@ -91,7 +159,7 @@ export default function AdminProfile() {
                 </div>
                 <div className="status-row">
                   <span className="label">Member Since:</span>
-                  <span className="value text-dark">September 2026</span>
+                  <span className="value text-dark">{memberSince}</span>
                 </div>
               </div>
               
@@ -99,9 +167,9 @@ export default function AdminProfile() {
             </div>
             
             <div className="profile-card-footer">
-              <button className="btn-edit-profile">
+              <button className="btn-edit-profile" onClick={handleEditToggle}>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
-                Edit Profile
+                {isEditing ? 'Cancel Editing' : 'Edit Profile'}
               </button>
             </div>
           </div>
@@ -116,22 +184,58 @@ export default function AdminProfile() {
                 <div className="form-grid">
                   <div className="form-group">
                     <label>First Name</label>
-                    <input type="text" value={user?.firstName || 'Admin'} readOnly />
+                    <input
+                      type="text"
+                      value={form.firstName}
+                      readOnly={!isEditing}
+                      onChange={(e) => setForm((f) => ({ ...f, firstName: e.target.value }))}
+                    />
                   </div>
                   <div className="form-group">
                     <label>Last Name</label>
-                    <input type="text" value={user?.lastName || 'User'} readOnly />
+                    <input
+                      type="text"
+                      value={form.lastName}
+                      readOnly={!isEditing}
+                      onChange={(e) => setForm((f) => ({ ...f, lastName: e.target.value }))}
+                    />
                   </div>
                   <div className="form-group full-width">
                     <label>Email Address</label>
-                    <input type="email" value={email} readOnly />
+                    <input type="email" value={email} readOnly title="Email cannot be changed" />
                   </div>
                   <div className="form-group full-width">
                     <label>Phone Number</label>
-                    <input type="text" value="+91 98765 43210" readOnly />
+                    <input
+                      type="text"
+                      value={form.phone}
+                      readOnly={!isEditing}
+                      placeholder="Not set"
+                      onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))}
+                    />
                   </div>
                 </div>
-                <button className="btn-save-changes">Save Changes</button>
+
+                {saveMessage && (
+                  <div className={`profile-save-message ${saveMessage.type}`}>
+                    {saveMessage.text}
+                  </div>
+                )}
+
+                {isEditing ? (
+                  <div className="profile-edit-actions">
+                    <button className="btn-save-changes" onClick={handleSave} disabled={isSaving}>
+                      {isSaving ? 'Saving...' : 'Save Changes'}
+                    </button>
+                    <button className="btn-cancel-changes" onClick={handleEditToggle} disabled={isSaving}>
+                      Cancel
+                    </button>
+                  </div>
+                ) : (
+                  <button className="btn-save-changes" onClick={handleEditToggle}>
+                    Edit Details
+                  </button>
+                )}
               </div>
               
               <div className="info-card">
@@ -161,11 +265,7 @@ export default function AdminProfile() {
                   </div>
                   <div className="stat-row">
                     <span className="label">Member Since</span>
-                    <span className="value">September 2026</span>
-                  </div>
-                  <div className="stat-row">
-                    <span className="label">Last Login</span>
-                    <span className="value">Today · 09:42 PM</span>
+                    <span className="value">{memberSince}</span>
                   </div>
                 </div>
               </div>

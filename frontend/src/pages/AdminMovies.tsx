@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../store/auth.store';
 import { moviesApi } from '../services/api.client';
+import { emitDataChange, useDataChange } from '../hooks/dataEvents';
+import { useAutoRefresh } from '../hooks/useAutoRefresh';
 import './AdminMovies.css';
 
 interface Movie {
@@ -52,6 +54,10 @@ export default function AdminMovies() {
   };
 
   useEffect(() => { fetchMovies(); }, []);
+
+  // Refetch when another page changes movies, and when the tab/window refocuses.
+  useDataChange(['movies'], fetchMovies);
+  useAutoRefresh(fetchMovies);
 
   const handleLogoutHome = () => { logout(); navigate('/'); };
 
@@ -109,6 +115,8 @@ export default function AdminMovies() {
       }
       setShowModal(false);
       await fetchMovies();
+      // Tell other pages (Screenings, student lists) to refresh.
+      emitDataChange('movies', 'screenings');
     } catch (err: any) {
       const msg = err?.response?.data?.error?.message ?? 'Failed to save movie. Check all fields.';
       setFormError(msg);
@@ -123,6 +131,7 @@ export default function AdminMovies() {
     try {
       await moviesApi.delete(movieId);
       await fetchMovies();
+      emitDataChange('movies', 'screenings');
     } catch {
       alert('Failed to delete movie.');
     }
@@ -133,6 +142,7 @@ export default function AdminMovies() {
     try {
       await moviesApi.update(movie.movieId, { isActive: !movie.isActive });
       await fetchMovies();
+      emitDataChange('movies', 'screenings');
     } catch {
       alert('Failed to update status.');
     }

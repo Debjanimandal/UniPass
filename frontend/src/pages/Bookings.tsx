@@ -1,28 +1,69 @@
-import React, { useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuthStore } from '../store/auth.store';
+import { bookingsApi } from '../services/api.client';
+import { emitDataChange } from '../hooks/dataEvents';
+import { useAutoRefresh } from '../hooks/useAutoRefresh';
 import './Bookings.css';
+
+interface MyBooking {
+  ticketId: number;
+  status: 'VALID' | 'SCANNED' | 'CANCELLED';
+  seatCode: string;
+  seatType: string;
+  movieTitle: string;
+  moviePoster: string;
+  screenName: string;
+  venue: string;
+  date: string;
+  startTime: string;
+  endTime: string;
+  price: string | number;
+}
+
+const fmtDate = (iso: string) =>
+  new Date(iso).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
+const fmtTime = (iso: string) =>
+  new Date(iso).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'UTC' });
 
 export default function Bookings() {
   const { user } = useAuthStore();
-  const fullName = user ? `${user.firstName} ${user.lastName}` : 'Student Name';
-  
-  const [selectedSeat, setSelectedSeat] = useState<string | null>('A5');
+  const fullName = user ? `${user.firstName} ${user.lastName}` : 'Student';
 
-  // Hardcoded seat layout for exact visual match
-  const rows = [
-    { label: 'A', seats: [null, null, '1', '2', '3', '4', '5', '6'] }, // offset starts
-    { label: 'B', seats: ['1', '2', '3', '4', '5', '6'] },
-    { label: 'C', seats: ['1', '2', '3', '4', '5', '6'], isPremium: true },
-    { label: 'D', seats: [null, null, '1', '2', '3', '4', '5', '6'] },
-    { label: 'E', seats: ['1', '2', '3', '4', '5', '6'] }
-  ];
+  const [bookings, setBookings] = useState<MyBooking[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
-  const occupiedSeats = ['C3', 'C4', 'C5', 'C6'];
+  const load = useCallback(async () => {
+    try {
+      setError('');
+      const res = await bookingsApi.getMyTickets();
+      setBookings(res.data?.data ?? []);
+    } catch (err: any) {
+      setError(err?.response?.data?.error?.message ?? 'Could not load your bookings.');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
-  const handleSeatClick = (seatId: string) => {
-    if (occupiedSeats.includes(seatId)) return;
-    setSelectedSeat(seatId);
+  useEffect(() => { load(); }, [load]);
+  useAutoRefresh(load);
+
+  const handleCancel = async (b: MyBooking) => {
+    if (!window.confirm(`Cancel your booking for ${b.movieTitle} (seat ${b.seatCode})?`)) return;
+    try {
+      await bookingsApi.cancel(b.ticketId);
+      emitDataChange('bookings', 'screenings');
+      await load();
+    } catch (err: any) {
+      alert(err?.response?.data?.error?.message ?? 'Could not cancel this booking.');
+    }
+  };
+
+  const badge = (status: MyBooking['status']) => {
+    if (status === 'SCANNED') return <span className="bk-badge scanned">Entered</span>;
+    if (status === 'CANCELLED') return <span className="bk-badge cancelled">Cancelled</span>;
+    return <span className="bk-badge valid">Confirmed</span>;
   };
 
   return (
@@ -35,10 +76,10 @@ export default function Bookings() {
         </Link>
         <div className="bookings-user-info">
           <span>Welcome, {fullName}!</span>
-          <img 
-            src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" 
-            alt="User Avatar" 
-            className="bookings-avatar" 
+          <img
+            src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(fullName)}`}
+            alt="User Avatar"
+            className="bookings-avatar"
           />
         </div>
       </nav>
@@ -49,156 +90,64 @@ export default function Bookings() {
         <Link to="/student/bookings" className="active">Bookings</Link>
         <Link to="/student/events">Events</Link>
         <Link to="/student/films">Films</Link>
+        <Link to="/student/tickets">My Tickets</Link>
         <Link to="/student/profile">Profile</Link>
       </nav>
 
-      {/* ─── Main Content Header ───────────────────────────────────── */}
+      {/* ─── Header ─────────────────────────────────────────────────── */}
       <div className="bookings-header-container">
         <div className="bookings-header-left">
-          <h1>Book Your Seat</h1>
-          <p>Choose a screening and select your preferred seat.</p>
+          <h1>My Bookings</h1>
+          <p>Your real screening bookings. To book a new one, pick a film and choose a seat.</p>
         </div>
-        <div className="bookings-steps">
-          <span>1. Screening</span> &rarr;
-          <span className="active-step">2. Select Seat</span> &rarr;
-          <span>3. Confirm</span>
-        </div>
+        <Link to="/student/films" className="bk-browse-btn">Browse Films</Link>
       </div>
 
-      {/* ─── Content Grid ──────────────────────────────────────────── */}
-      <main className="bookings-content-grid">
-        
-        {/* Left Column */}
-        <div className="bookings-left-col">
-          
-          {/* Screening Info Card */}
-          <div className="booking-card screening-info-card">
-            <div style={{ padding: '24px', color: '#64748b', textAlign: 'center', width: '100%' }}>
-              No movie selected.
-            </div>
+      <div className="bk-content">
+        {loading ? (
+          <div className="bk-empty">Loading your bookings…</div>
+        ) : error ? (
+          <div className="bk-empty error">{error}</div>
+        ) : bookings.length === 0 ? (
+          <div className="bk-empty">
+            You have no bookings yet. <Link to="/student/films">Browse films</Link> to book a seat.
           </div>
-
-          {/* Seat Selection Card */}
-          <div className="booking-card seat-selection-card">
-            <div className="seat-card-header">
-              <h3>Select Your Seat</h3>
-              <p>Screen 1 • Select one available seat</p>
-            </div>
-
-            <div className="screen-indicator-wrapper">
-              <div className="screen-curve">
-                <span className="screen-text">SCREEN</span>
-              </div>
-            </div>
-
-            <div className="seats-grid-container">
-              {rows.map((row, i) => (
-                <div key={row.label} className={`seat-row ${row.isPremium ? 'premium-row' : ''}`}>
-                  {/* For layout exact match: Row A and D are left aligned, B, C, E are right aligned in the image.
-                      Wait, the image shows A and D having gaps, but actually A and D are on left, B,C,E are shifted right.
-                      I will use the offset to match the visual. */}
-                  {i % 2 === 0 && <span className="row-label">{row.label}</span>}
-                  
-                  <div className="seats-group">
-                    {row.seats.map((seatNum, j) => {
-                      if (seatNum === null) return <div key={j} className="seat-gap"></div>;
-                      
-                      const seatId = `${row.label}${seatNum}`;
-                      const isOccupied = occupiedSeats.includes(seatId);
-                      const isSelected = selectedSeat === seatId;
-                      
-                      return (
-                        <button
-                          key={seatId}
-                          className={`seat-btn ${isOccupied ? 'occupied' : ''} ${isSelected ? 'selected' : ''}`}
-                          onClick={() => handleSeatClick(seatId)}
-                          disabled={isOccupied}
-                        >
-                          {seatNum}
-                        </button>
-                      );
-                    })}
+        ) : (
+          <div className="bk-list">
+            {bookings.map(b => {
+              const past = new Date(b.date).getTime() < new Date(new Date().toDateString()).getTime();
+              const canCancel = b.status === 'VALID' && !past;
+              return (
+                <div className={`bk-card ${b.status.toLowerCase()}`} key={b.ticketId}>
+                  <img
+                    src={b.moviePoster}
+                    alt={b.movieTitle}
+                    className="bk-poster"
+                    onError={(e) => { (e.target as HTMLImageElement).style.visibility = 'hidden'; }}
+                  />
+                  <div className="bk-info">
+                    <div className="bk-title-row">
+                      <h3>{b.movieTitle}</h3>
+                      {badge(b.status)}
+                    </div>
+                    <div className="bk-detail"><span>Date</span><strong>{fmtDate(b.date)}</strong></div>
+                    <div className="bk-detail"><span>Time</span><strong>{fmtTime(b.startTime)} &rarr; {fmtTime(b.endTime)}</strong></div>
+                    <div className="bk-detail"><span>Screen</span><strong>{b.screenName} · {b.venue}</strong></div>
+                    <div className="bk-detail"><span>Seat</span><strong>{b.seatCode} ({b.seatType})</strong></div>
+                    <div className="bk-detail"><span>Price</span><strong>&#8377;{b.price}</strong></div>
                   </div>
-                  
-                  {i % 2 !== 0 && <span className="row-label">{row.label}</span>}
+                  <div className="bk-actions">
+                    <Link to="/student/tickets" className="bk-view-ticket">View QR Ticket</Link>
+                    {canCancel && (
+                      <button className="bk-cancel" onClick={() => handleCancel(b)}>Cancel</button>
+                    )}
+                  </div>
                 </div>
-              ))}
-            </div>
-
-            <div className="seat-legend">
-              <div className="legend-items">
-                <div className="legend-item">
-                  <div className="legend-box available"></div> Available
-                </div>
-                <div className="legend-item">
-                  <div className="legend-box selected"></div> Selected
-                </div>
-                <div className="legend-item">
-                  <div className="legend-box occupied"></div> Occupied
-                </div>
-                <div className="legend-item">
-                  <div className="legend-box premium"></div> Premium
-                </div>
-              </div>
-              <div className="seats-available-text">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-                  <polyline points="22 4 12 14.01 9 11.01"></polyline>
-                </svg>
-                48 seats available
-              </div>
-            </div>
+              );
+            })}
           </div>
-          
-        </div>
-
-        {/* Right Column: Summary */}
-        <div className="bookings-right-col">
-          <div className="booking-card booking-summary-card">
-            <h3>Booking Summary</h3>
-            
-            <div className="summary-row">
-              <span className="label">Movie:</span>
-              <span className="value">Interstellar</span>
-            </div>
-            <div className="summary-row">
-              <span className="label">Screening:</span>
-              <span className="value">15 Sep 2026 • 6:00 PM</span>
-            </div>
-            <div className="summary-row">
-              <span className="label">Screen:</span>
-              <span className="value">Screen 1</span>
-            </div>
-            <div className="summary-row">
-              <span className="label">Selected Seat:</span>
-              <span className="value">{selectedSeat || '-'}</span>
-            </div>
-            
-            <div className="summary-divider"></div>
-
-            <div className="summary-row">
-              <span className="label">Admission:</span>
-              <span className="value" style={{ color: '#16a34a', fontWeight: 700 }}>FREE</span>
-            </div>
-
-
-            <button className="btn-confirm-booking" disabled={!selectedSeat}>
-              Confirm Booking
-            </button>
-            <Link to="/student/dashboard" className="btn-back">Back</Link>
-            
-            <div className="booking-info-text">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{flexShrink: 0, marginTop: '2px'}}>
-                <circle cx="12" cy="12" r="10"></circle>
-                <line x1="12" y1="16" x2="12" y2="12"></line>
-                <line x1="12" y1="8" x2="12.01" y2="8"></line>
-              </svg>
-              <span>Your seat will be reserved for this screening once the booking is confirmed.</span>
-            </div>
-          </div>
-        </div>
-
-      </main>
+        )}
+      </div>
     </div>
   );
 }

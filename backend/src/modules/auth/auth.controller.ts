@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { registerUser, loginUser, getMe } from './auth.service';
+import { registerUser, loginUser, getMe, updateProfile } from './auth.service';
 import { sendSuccess, Errors } from '../../utils/response';
 
 // ─── POST /api/auth/register ──────────────────────────────────────────────────
@@ -51,6 +51,23 @@ export async function me(req: Request, res: Response): Promise<void> {
       Errors.notFound(res, 'User');
     } else {
       console.error('[me]', err);
+      Errors.internal(res);
+    }
+  }
+}
+
+// ─── PATCH /api/auth/me ───────────────────────────────────────────────────────
+
+export async function updateMe(req: Request, res: Response): Promise<void> {
+  try {
+    const user = await updateProfile(req.user!.sub, req.body);
+    sendSuccess(res, user, 'Profile updated successfully.');
+  } catch (err: unknown) {
+    const e = err as { code?: string };
+    if (e.code === 'USER_NOT_FOUND') {
+      Errors.notFound(res, 'User');
+    } else {
+      console.error('[updateMe]', err);
       Errors.internal(res);
     }
   }

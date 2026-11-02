@@ -16,15 +16,21 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-// ─── Response Interceptor — Handle 401 Globally ──────────────────
+// ─── Response Interceptor — Handle Auth Errors Globally ──────────
 
 api.interceptors.response.use(
   (response) => response,
   (error: AxiosError) => {
-    if (error.response?.status === 401) {
+    const status = error.response?.status;
+
+    // Expired / invalid token — force a clean re-login
+    if (status === 401) {
       useAuthStore.getState().logout();
-      window.location.href = '/login';
+      if (window.location.pathname !== '/login') {
+        window.location.href = '/login';
+      }
     }
+
     return Promise.reject(error);
   }
 );
@@ -46,12 +52,49 @@ export const authApi = {
     api.post('/auth/login', data),
 
   me: () => api.get('/auth/me'),
+
+  updateProfile: (data: Partial<{ firstName: string; lastName: string; phone: string }>) =>
+    api.patch('/auth/me', data),
+};
+
+// ─── Dashboard API (admin) ─────────────────────────────────────────
+
+export const dashboardApi = {
+  getStats: () => api.get('/dashboard/stats'),
+};
+
+// ─── Users API (admin) ─────────────────────────────────────────────
+
+export const usersApi = {
+  getAll: () => api.get('/users'),
+
+  getById: (id: number) => api.get(`/users/${id}`),
+
+  create: (data: {
+    firstName: string;
+    lastName: string;
+    email: string;
+    phone: string;
+    password: string;
+    role: 'STUDENT' | 'GUARD' | 'ADMIN';
+  }) => api.post('/users', data),
+
+  update: (
+    id: number,
+    data: Partial<{
+      firstName: string;
+      lastName: string;
+      phone: string;
+      role: 'STUDENT' | 'GUARD' | 'ADMIN';
+      isActive: boolean;
+    }>
+  ) => api.patch(`/users/${id}`, data),
 };
 
 // ─── Movies API ───────────────────────────────────────────────────
 
 export const moviesApi = {
-  getAll: (params?: { active?: boolean }) =>
+  getAll: (params?: { active?: boolean; search?: string; category?: string; language?: string; date?: string }) =>
     api.get('/movies', { params }),
 
   getById: (id: number) => api.get(`/movies/${id}`),
@@ -138,7 +181,7 @@ export const seatsApi = {
   update: (
     id: number,
     data: Partial<{
-      seatType: 'REGULAR' | 'PREMIUM' | 'VIP' | 'WHEELCHAIR';
+      seatType: 'REGULAR' | 'PREMIUM' | 'VIP';
       isActive: boolean;
     }>
   ) => api.patch(`/seats/${id}`, data),
@@ -149,12 +192,25 @@ export const seatsApi = {
 // ─── Bookings API ─────────────────────────────────────────────────
 
 export const bookingsApi = {
-  create: (data: { screeningId: number; seatIds: number[] }) =>
+  // Seat map + availability for a screening (any authenticated user)
+  getSeats: (screeningId: number) =>
+    api.get(`/bookings/screenings/${screeningId}/seats`),
+
+  // Book one seat for a screening → returns ticket + unique QR (code + token)
+  create: (data: { screeningId: number; seatId: number }) =>
     api.post('/bookings', data),
 
-  getMyBookings: () => api.get('/bookings/my-bookings'),
+  // Current student's tickets, each with a freshly generated QR
+  getMyTickets: () => api.get('/bookings/my-tickets'),
 
-  cancel: (id: number) => api.patch(`/bookings/${id}/cancel`),
+  // Cancel a ticket the student owns
+  cancel: (ticketId: number) => api.delete(`/bookings/${ticketId}`),
+
+  // Guard: validate + scan a QR token
+  scan: (qrToken: string) => api.post('/bookings/scan', { qrToken }),
+
+  // Admin: list every booking across all students + stats
+  getAllBookings: () => api.get('/bookings/all'),
 };
 
 // ─── Screens API ──────────────────────────────────────────────────
@@ -185,18 +241,4 @@ export const screensApi = {
   delete: (id: number) => api.delete(`/screens/${id}`),
 };
 
-// ─── Tickets API ──────────────────────────────────────────────────
 
-export const ticketsApi = {
-  getMyTickets: () => api.get('/tickets'),
-  getById: (id: number) => api.get(`/tickets/${id}`),
-};
-
-// ─── Scan API ─────────────────────────────────────────────────────
-
-export const scanApi = {
-  validate: (credential: string) =>
-    api.post('/scan/validate', { credential }),
-
-  getHistory: () => api.get('/scan/history'),
-};

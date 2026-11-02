@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../store/auth.store';
 import { moviesApi, screensApi, screeningsApi } from '../services/api.client';
+import { emitDataChange, useDataChange } from '../hooks/dataEvents';
+import { useAutoRefresh } from '../hooks/useAutoRefresh';
 import './AdminScreenings.css';
 
 interface Movie {
@@ -9,6 +11,8 @@ interface Movie {
   title: string;
   posterUrl: string;
   durationMinutes: number;
+  genre?: string;
+  language?: string;
   validUntil?: string;
   createdAt?: string;
 }
@@ -66,6 +70,8 @@ export default function AdminScreenings() {
   // Modal
   const [showModal, setShowModal] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
+  // True when reopening an expired screening to give it a new (future) showtime.
+  const [reactivating, setReactivating] = useState(false);
   const [form, setForm] = useState({ ...EMPTY_FORM });
   
   // Edit mode specific state
@@ -106,17 +112,30 @@ export default function AdminScreenings() {
     fetchData();
   }, []);
 
+  // Auto-refresh when movies or screenings change elsewhere, and on refocus,
+  // so edits to a movie (duration, genre, validity) show here immediately.
+  useDataChange(['movies', 'screenings'], fetchData);
+  useAutoRefresh(fetchData);
+
+  const tomorrowYMD = () => {
+    const d = new Date();
+    d.setDate(d.getDate() + 1);
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  };
+
   const openAdd = () => {
     setEditingId(null);
+    setReactivating(false);
     setForm({ ...EMPTY_FORM });
     setBulkState({ startDate: '', endDate: '', timings: [''] });
     setFormError('');
     setShowModal(true);
   };
 
-  const openEdit = (s: ScreeningData) => {
+  const openEdit = (s: ScreeningData, isReactivating = false) => {
     setEditingId(s.screeningId);
-    
+    setReactivating(isReactivating);
+
     const extractTime = (iso: string) => {
       if (!iso) return '';
       const d = new Date(iso);
@@ -129,9 +148,11 @@ export default function AdminScreenings() {
       movieId: String(s.movieId),
       screenId: String(s.screenId),
       price: String(s.price),
-      isActive: s.isActive,
+      isActive: true, // reactivating/editing should keep the show enabled
     });
-    setEditDate(s.date ? s.date.split('T')[0] : '');
+    // When reactivating an expired show, pre-fill a future date so saving
+    // actually produces an active screening instead of another past one.
+    setEditDate(isReactivating ? tomorrowYMD() : (s.date ? s.date.split('T')[0] : ''));
     setEditStartTime(extractTime(s.startTime));
     setFormError('');
     setShowModal(true);
@@ -159,14 +180,14 @@ export default function AdminScreenings() {
     // Validation: Check if screening date exceeds movie's valid limits
     if (selectedMovie) {
       const validUntilDate = selectedMovie.validUntil ? new Date(selectedMovie.validUntil) : null;
-      if (validUntilDate) validUntilDate.setHours(23,59,59,999);
-      
+      if (validUntilDate) validUntilDate.setHours(23, 59, 59, 999);
+
       const validFromDate = selectedMovie.createdAt ? new Date(selectedMovie.createdAt) : null;
-      if (validFromDate) validFromDate.setHours(0,0,0,0);
-      
+      if (validFromDate) validFromDate.setHours(0, 0, 0, 0);
+
       if (editingId) {
         const d = editDate ? new Date(editDate) : null;
-        
+
         if (d && validFromDate && d < validFromDate) {
           setFormError("Can't select: the date is not valid for the movie (before movie start date).");
           return;
@@ -178,7 +199,7 @@ export default function AdminScreenings() {
       } else {
         const sd = bulkState.startDate ? new Date(bulkState.startDate) : null;
         const ed = bulkState.endDate ? new Date(bulkState.endDate) : null;
-        
+
         if (sd && validFromDate && sd < validFromDate) {
           setFormError("Can't select: the date is not valid for the movie (before movie start date).");
           return;
@@ -187,6 +208,18 @@ export default function AdminScreenings() {
           setFormError('The movie is not valid for this date range. Change your movie settings first.');
           return;
         }
+      }
+    }
+
+    // Prevent (re)scheduling a single screening in the past — the whole point
+    // of "Activate" is to give an expired show a future slot.
+    if (editingId && editDate && editStartTime) {
+      const [hh, mm] = editStartTime.split(':').map(Number);
+      const when = new Date(editDate);
+      when.setHours(hh || 0, mm || 0, 0, 0);
+      if (when.getTime() < Date.now()) {
+        setFormError('Please choose a future date and time — this slot is in the past.');
+        return;
       }
     }
 
@@ -235,6 +268,7 @@ export default function AdminScreenings() {
       }
       setShowModal(false);
       await fetchData();
+      emitDataChange('screenings');
     } catch (err: any) {
       const msg = err?.response?.data?.error?.message ?? 'Failed to save screening(s).';
       setFormError(msg);
@@ -248,6 +282,7 @@ export default function AdminScreenings() {
     try {
       await screeningsApi.delete(id);
       await fetchData();
+      emitDataChange('screenings');
     } catch {
       alert('Failed to delete screening.');
     }
@@ -257,6 +292,7 @@ export default function AdminScreenings() {
     try {
       await screeningsApi.update(s.screeningId, { isActive: !s.isActive });
       await fetchData();
+      emitDataChange('screenings');
     } catch {
       alert('Failed to update status.');
     }
@@ -278,21 +314,64 @@ export default function AdminScreenings() {
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
   };
 
+  // Combine a screening's date (UTC midnight) with a time value (stored on the
+  // 1970 epoch in UTC) into the real moment the screening happens.
+  const combineDateTime = (dateIso: string, timeIso: string): Date | null => {
+    if (!dateIso || !timeIso) return null;
+    const d = new Date(dateIso);
+    const t = new Date(timeIso);
+    if (isNaN(d.getTime()) || isNaN(t.getTime())) return null;
+    return new Date(Date.UTC(
+      d.getUTCFullYear(),
+      d.getUTCMonth(),
+      d.getUTCDate(),
+      t.getUTCHours(),
+      t.getUTCMinutes(),
+      t.getUTCSeconds()
+    ));
+  };
+
+  // A screening has ended if its end datetime is in the past.
+  const isExpired = (s: ScreeningData): boolean => {
+    const end = combineDateTime(s.date, s.endTime) ?? combineDateTime(s.date, s.startTime);
+    return end != null && end.getTime() < Date.now();
+  };
+
+  // The real, displayed status of a screening:
+  //  - Expired  → its showtime has already passed (regardless of the toggle)
+  //  - Inactive → admin has turned it off
+  //  - Active   → live and upcoming
+  const getScreeningStatus = (s: ScreeningData): 'expired' | 'inactive' | 'active' => {
+    if (isExpired(s)) return 'expired';
+    if (!s.isActive) return 'inactive';
+    return 'active';
+  };
+
   let filtered = screenings.filter(s => {
     if (searchQuery && !s.movie?.title.toLowerCase().includes(searchQuery.toLowerCase()) && !s.screen?.screenName.toLowerCase().includes(searchQuery.toLowerCase())) return false;
     if (filterMovie && String(s.movieId) !== filterMovie) return false;
     if (filterScreen && String(s.screenId) !== filterScreen) return false;
-    if (filterStatus === 'active' && !s.isActive) return false;
-    if (filterStatus === 'inactive' && s.isActive) return false;
+    const realStatus = getScreeningStatus(s);
+    if (filterStatus === 'active' && realStatus !== 'active') return false;
+    if (filterStatus === 'inactive' && realStatus !== 'inactive') return false;
+    if (filterStatus === 'expired' && realStatus !== 'expired') return false;
     return true;
   });
 
-  const activeCount = screenings.filter(s => s.isActive).length;
+  // "Active" now means live AND not past — matching what the badge shows.
+  const activeCount = screenings.filter(s => getScreeningStatus(s) === 'active').length;
+  const expiredCount = screenings.filter(s => isExpired(s)).length;
   const todayCount = screenings.filter(s => s.date.split('T')[0] === getLocalYMD(new Date())).length;
   const getCapacity = (s: ScreeningData) => s.screen?._count?.seats ?? 0;
   const getBooked = (s: ScreeningData) => s._count?.tickets ?? 0;
-  const soldOutCount = screenings.filter(s => getBooked(s) >= getCapacity(s) && getCapacity(s) > 0).length;
-  const upcomingScreenings = filtered.filter(s => s.isActive && new Date(s.date) >= new Date(new Date().setHours(0,0,0,0)));
+  // Highlight only genuinely upcoming, active screenings.
+  const upcomingScreenings = filtered
+    .filter(s => getScreeningStatus(s) === 'active')
+    .sort((a, b) => {
+      const da = combineDateTime(a.date, a.startTime)?.getTime() ?? 0;
+      const db = combineDateTime(b.date, b.startTime)?.getTime() ?? 0;
+      return da - db;
+    });
   const highlight = upcomingScreenings.length > 0 ? upcomingScreenings[0] : null;
 
   // Selected movie for modal to calculate durations
@@ -361,8 +440,8 @@ export default function AdminScreenings() {
             <strong>{todayCount}</strong> Today
           </button>
           <button className="status-tab">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ef4444" strokeWidth="2"><circle cx="12" cy="12" r="10"></circle><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line></svg>
-            <strong>{soldOutCount}</strong> Sold Out
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" strokeWidth="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+            <strong>{expiredCount}</strong> Expired
           </button>
         </div>
 
@@ -385,6 +464,7 @@ export default function AdminScreenings() {
               <option value="">Status [ All Status ]</option>
               <option value="active">Active</option>
               <option value="inactive">Inactive</option>
+              <option value="expired">Expired</option>
             </select>
             <button className="btn-clear-filters" onClick={() => { setSearchQuery(''); setFilterMovie(''); setFilterScreen(''); setFilterStatus(''); }}>Clear Filters</button>
           </div>
@@ -453,8 +533,7 @@ export default function AdminScreenings() {
                 <thead>
                   <tr>
                     <th>Movie</th>
-                    <th>Date</th>
-                    <th>Time</th>
+                    <th>Date &amp; Time (From &rarr; To)</th>
                     <th>Screen</th>
                     <th>Bookings</th>
                     <th>Capacity</th>
@@ -469,24 +548,74 @@ export default function AdminScreenings() {
                     const capacity = getCapacity(s);
                     const booked = getBooked(s);
                     const avail = Math.max(0, capacity - booked);
+                    const realStatus = getScreeningStatus(s);
+                    const expired = realStatus === 'expired';
                     return (
-                      <tr key={s.screeningId}>
-                        <td style={{ fontWeight: 600 }}>{s.movie?.title}</td>
-                        <td>{formatDate(s.date)}</td>
-                        <td style={{ whiteSpace: 'nowrap' }}>{formatTime(s.startTime)}<br/><span style={{fontSize:'12px', color:'#94a3b8'}}>{formatTime(s.endTime)}</span></td>
+                      <tr key={s.screeningId} className={expired ? 'row-expired' : ''}>
+                        <td>
+                          <div className="movie-cell">
+                            {s.movie?.posterUrl && (
+                              <img
+                                src={s.movie.posterUrl}
+                                alt={s.movie?.title}
+                                className="movie-cell-poster"
+                                onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                              />
+                            )}
+                            <div className="movie-cell-info">
+                              <span className="movie-cell-title">{s.movie?.title}</span>
+                              <span className="movie-cell-meta">
+                                {[
+                                  s.movie?.genre,
+                                  s.movie?.language,
+                                  s.movie?.durationMinutes ? `${s.movie.durationMinutes} min` : null,
+                                ].filter(Boolean).join(' · ')}
+                              </span>
+                            </div>
+                          </div>
+                        </td>
+                        <td style={{ whiteSpace: 'nowrap' }}>
+                          <div className="dt-range">
+                            <span className="dt-date">{formatDate(s.date)}</span>
+                            <span className="dt-times">
+                              {formatTime(s.startTime)} <span className="dt-arrow">&rarr;</span> {formatTime(s.endTime)}
+                            </span>
+                          </div>
+                        </td>
                         <td>{s.screen?.screenName}</td>
                         <td>{booked}</td>
                         <td>{capacity}</td>
-                        <td style={{ color: avail === 0 ? '#ef4444' : '#10b981', fontWeight: 500 }}>{avail}</td>
+                        <td style={{ color: expired ? '#94a3b8' : (avail === 0 ? '#ef4444' : '#10b981'), fontWeight: 500 }}>
+                          {expired ? '—' : avail}
+                        </td>
                         <td>₹{s.price}</td>
                         <td>
-                          {s.isActive ? <span className="status-badge published">Active</span> : <span className="status-badge inactive">Inactive</span>}
+                          {realStatus === 'expired' && <span className="status-badge expired">Expired</span>}
+                          {realStatus === 'active' && <span className="status-badge published">Active</span>}
+                          {realStatus === 'inactive' && <span className="status-badge inactive">Inactive</span>}
                         </td>
                         <td>
                           <div style={{ display: 'flex', gap: '8px' }}>
-                            <button className="btn-outline" onClick={() => toggleActive(s)}>
-                              {s.isActive ? 'Deactivate' : 'Activate'}
-                            </button>
+                            {realStatus === 'active' ? (
+                              // Live & active → allow turning it off
+                              <button className="btn-outline" onClick={() => toggleActive(s)}>
+                                Deactivate
+                              </button>
+                            ) : realStatus === 'expired' ? (
+                              // Past show → "Activate" reopens the editor to pick a new date/time
+                              <button
+                                className="btn-outline activate"
+                                onClick={() => openEdit(s, true)}
+                                title="Set a new date & time to re-run this screening"
+                              >
+                                Activate
+                              </button>
+                            ) : (
+                              // Inactive but not expired → re-enable in place
+                              <button className="btn-outline activate" onClick={() => toggleActive(s)}>
+                                Activate
+                              </button>
+                            )}
                             <button className="btn-outline edit" style={{ color: '#fff', background: '#1e3a8a', border: '1px solid #1e3a8a' }} onClick={() => openEdit(s)}>Edit</button>
                             <button className="btn-outline" onClick={() => handleDelete(s.screeningId)}>Delete</button>
                           </div>
@@ -506,9 +635,15 @@ export default function AdminScreenings() {
         <div className="modal-overlay" onClick={() => setShowModal(false)}>
           <div className="modal-box" onClick={e => e.stopPropagation()} style={{ maxWidth: '600px' }}>
             <div className="modal-header">
-              <h2>{editingId ? 'Edit Screening' : 'Create Screenings Schedule'}</h2>
+              <h2>{reactivating ? 'Reactivate Screening' : editingId ? 'Edit Screening' : 'Create Screenings Schedule'}</h2>
               <button className="modal-close" onClick={() => setShowModal(false)}>&times;</button>
             </div>
+
+            {reactivating && (
+              <div className="modal-reactivate-note">
+                This screening has already ended. Pick a <strong>future date &amp; time</strong> to run it again — we&apos;ve pre-filled tomorrow for you.
+              </div>
+            )}
 
             {formError && <div className="modal-error">{formError}</div>}
 

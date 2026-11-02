@@ -21,8 +21,15 @@ export const LoginSchema = z.object({
   password: z.string().min(1, 'Password is required'),
 });
 
+export const UpdateProfileSchema = z.object({
+  firstName: z.string().min(1, 'First name is required').max(50).optional(),
+  lastName: z.string().min(1, 'Last name is required').max(50).optional(),
+  phone: z.string().min(6, 'Phone number must be at least 6 digits').max(20).optional(),
+});
+
 export type RegisterInput = z.infer<typeof RegisterSchema>;
 export type LoginInput = z.infer<typeof LoginSchema>;
+export type UpdateProfileInput = z.infer<typeof UpdateProfileSchema>;
 
 // ─── Safe User Shape (never expose passwordHash) ─────────────────────────────
 
@@ -124,6 +131,27 @@ export async function getMe(userId: number) {
   if (!user || !user.isActive) {
     throw { code: 'USER_NOT_FOUND', message: 'User not found.' };
   }
+
+  return safeUser(user);
+}
+
+export async function updateProfile(userId: number, input: UpdateProfileInput) {
+  const existing = await prisma.user.findUnique({ where: { userId } });
+
+  if (!existing || !existing.isActive) {
+    throw { code: 'USER_NOT_FOUND', message: 'User not found.' };
+  }
+
+  // Only persist fields that were actually provided
+  const data: UpdateProfileInput = {};
+  if (input.firstName !== undefined) data.firstName = input.firstName;
+  if (input.lastName !== undefined) data.lastName = input.lastName;
+  if (input.phone !== undefined) data.phone = input.phone;
+
+  const user = await prisma.user.update({
+    where: { userId },
+    data,
+  });
 
   return safeUser(user);
 }

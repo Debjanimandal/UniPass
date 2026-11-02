@@ -7,6 +7,7 @@ import {
   myTickets,
   cancelBooking,
   scanTicket,
+  allBookings,
 } from './bookings.controller';
 
 const router = Router();
@@ -44,6 +45,16 @@ router.delete(
   authenticate,
   requireRole('STUDENT'),
   cancelBooking
+);
+
+// ─── Admin routes ────────────────────────────────────────────────────────────
+
+// GET all bookings across every student (admin dashboard/bookings page)
+router.get(
+  '/all',
+  authenticate,
+  requireRole('ADMIN'),
+  allBookings
 );
 
 // ─── Guard routes ──────────────────────────────────────────────────────────────

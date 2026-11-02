@@ -10,6 +10,8 @@ import screensRouter from './modules/screens/screens.router';
 import screeningsRouter from './modules/screenings/screenings.router';
 import seatsRouter from './modules/seats/seats.router';
 import bookingsRouter from './modules/bookings/bookings.router';
+import usersRouter from './modules/users/users.router';
+import dashboardRouter from './modules/dashboard/dashboard.router';
 const app = express();
 
 // ─── Middleware ───────────────────────────────────────────────────────────────
@@ -41,6 +43,8 @@ app.use('/api/screens', screensRouter);
 app.use('/api/screenings', screeningsRouter);
 app.use('/api/seats', seatsRouter);
 app.use('/api/bookings', bookingsRouter);
+app.use('/api/users', usersRouter);
+app.use('/api/dashboard', dashboardRouter);
 
 // ─── Error Handling ──────────────────────────────────────────────────────────
 

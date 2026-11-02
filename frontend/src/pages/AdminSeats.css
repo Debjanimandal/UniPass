@@ -434,6 +434,37 @@
   background: #ffe4e6;
 }
 
+/* Save Type button (appears when the Type dropdown has an unsaved change) */
+.type-save-row {
+  justify-content: flex-end;
+  margin-top: -4px;
+}
+
+.btn-save-type {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 7px 14px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  background: #1e3a8a;
+  color: white;
+  border: none;
+  transition: all 0.2s;
+}
+
+.btn-save-type:hover:not(:disabled) {
+  background: #1e40af;
+}
+
+.btn-save-type:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 .no-seat-selected {
   padding: 40px 20px;
   text-align: center;
@@ -548,6 +579,31 @@
   color: #64748b;
 }
 
+/* Seat type badges in the table */
+.type-badge {
+  display: inline-flex;
+  padding: 3px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.type-badge.type-regular {
+  background-color: #eff6ff;
+  color: #2563eb;
+}
+
+.type-badge.type-premium {
+  background-color: #fdf3e2;
+  color: #b4740f;
+}
+
+.type-badge.type-vip {
+  background-color: #f6edfd;
+  color: #9333ea;
+}
+
 .btn-action-icon {
   background: transparent;
   border: none;
@@ -567,4 +623,39 @@
 .btn-action-icon.delete:hover {
   background: #fef2f2;
   color: #dc2626;
+}
+
+/* Table footer: seat count + Show More/Less */
+.seats-table-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 20px;
+  border-top: 1px solid #f1f5f9;
+}
+
+.seats-count-text {
+  font-size: 13px;
+  color: #64748b;
+}
+
+.btn-show-more {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  color: #1e3a8a;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 7px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-show-more:hover {
+  background: #eff6ff;
+  border-color: #1e3a8a;
 }
